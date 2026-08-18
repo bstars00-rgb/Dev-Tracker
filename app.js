@@ -1,4 +1,4 @@
-/* OHMY Dev Tracker — read-only board. No framework, no build, no server. */
+/* OHMY Integration Tracker — read-only board. No framework, no build, no server. */
 (() => {
   'use strict';
 
@@ -986,7 +986,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dev-tracker-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `integration-tracker-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   });

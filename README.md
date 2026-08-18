@@ -1,12 +1,12 @@
-# OHMY Dev Tracker
+# OHMY Integration Tracker
 
-한 페이지짜리 **읽기 전용** Dev Tracker 화면. 엑셀이 원본이고, 이 화면은 그걸 보기 좋게 보여줄 뿐입니다.
+한 페이지짜리 **읽기 전용** API 연동 현황 화면. 엑셀이 원본이고, 이 화면은 그걸 보기 좋게 보여줄 뿐입니다.
 
 - 로그인 없음, 데이터베이스 없음, 서버 없음
 - `index.html` 더블클릭하면 바로 열림 (인터넷 연결도 불필요)
 - GitHub Pages로 자동 배포 — 팀은 링크 하나만 있으면 됩니다
 
-**링크:** https://bstars00-rgb.github.io/Dev-Tracker/
+**링크:** https://bstars00-rgb.github.io/Intergration-Tracker/
 
 ---
 

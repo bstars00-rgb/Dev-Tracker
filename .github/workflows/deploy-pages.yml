@@ -38,7 +38,7 @@ jobs:
           count=$(node -e "console.log(require('./data/tracker.json').rows.length)")
           echo "rows parsed: $count"
           if [ "$count" -lt 1 ]; then
-            echo "::error::The Dev Tracker sheet produced 0 rows — check the sheet name, header row and column names."
+            echo "::error::The tracker sheet produced 0 rows — check the sheet name, header row and column names."
             exit 1
           fi
 

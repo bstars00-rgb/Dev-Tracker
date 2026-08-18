@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  OHMY Dev Tracker - refresh the board from Excel
+REM  OHMY Integration Tracker - refresh the board from Excel
 REM
 REM  1. Save your changes in data\Dev_Schedule.xlsx
 REM  2. Double-click this file
