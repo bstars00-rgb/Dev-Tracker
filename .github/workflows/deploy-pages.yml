@@ -1,0 +1,63 @@
+name: Deploy board to GitHub Pages
+
+# Excel in, live page out.
+# Replace data/Dev_Schedule.xlsx, commit, push — this converts the sheet and publishes.
+# Nobody needs Node.js installed to update the board.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish; queue at most one more.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Convert Excel to JSON
+        run: npm run build
+
+      - name: The sheet must produce rows
+        run: |
+          count=$(node -e "console.log(require('./data/tracker.json').rows.length)")
+          echo "rows parsed: $count"
+          if [ "$count" -lt 1 ]; then
+            echo "::error::The Dev Tracker sheet produced 0 rows — check the sheet name, header row and column names."
+            exit 1
+          fi
+
+      # The workbook is the source; it does not need to be downloadable from the site.
+      - name: Keep the raw workbook out of the published site
+        run: rm -f data/Dev_Schedule.xlsx
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

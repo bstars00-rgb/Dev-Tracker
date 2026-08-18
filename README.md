@@ -4,53 +4,46 @@
 
 - 로그인 없음, 데이터베이스 없음, 서버 없음
 - `index.html` 더블클릭하면 바로 열림 (인터넷 연결도 불필요)
-- 이 저장소는 **Private** 입니다. 파트너 명단·담당자·진행상황이 들어 있으니 Public으로 바꾸지 마세요
+- GitHub Pages로 자동 배포 — 팀은 링크 하나만 있으면 됩니다
 
----
-
-## 보기
-
-`index.html` 더블클릭. 끝입니다. 외부 요청이 하나도 없는 정적 파일이라 사내망에서도, 오프라인에서도 동일하게 동작합니다.
+**링크:** https://bstars00-rgb.github.io/Dev-Tracker/
 
 ---
 
 ## 업데이트 (엑셀이 원본)
 
+### 방법 A — 엑셀만 바꿔서 푸시 (권장)
+
 1. `data/Dev_Schedule.xlsx` 를 최신 파일로 교체 — **파일명은 그대로**
-2. **`update.bat` 더블클릭** → 변환되고 화면이 자동으로 열립니다
+2. 커밋 & 푸시
+
+GitHub Actions가 변환하고 배포합니다. **Node.js 설치 필요 없습니다.**
+1~2분 뒤 링크에 반영됩니다. 진행 상황은 저장소 **Actions** 탭에서 볼 수 있습니다.
+
+### 방법 B — 올리기 전에 로컬에서 확인
+
+1. `data/Dev_Schedule.xlsx` 교체
+2. **`update.bat` 더블클릭** → 변환되고 화면이 자동으로 열림
 3. 확인되면 커밋 & 푸시
 
-> 처음 한 번은 Node.js가 필요합니다 ([nodejs.org](https://nodejs.org) LTS). `update.bat` 이 알아서 설치 과정을 안내합니다.
+이 방법은 Node.js가 필요합니다 ([nodejs.org](https://nodejs.org) LTS). `update.bat` 이 첫 실행 때 안내합니다.
 
-엑셀 규칙: 파일명 `Dev_Schedule.xlsx`, 시트명 `Dev Tracker`, 헤더 3행.
-컬럼명이 바뀌면 [`scripts/build.mjs`](scripts/build.mjs) 맨 위 목록만 고치면 됩니다.
-잘못되면 GitHub Actions가 푸시 때 잡아서 알려줍니다.
+> **엑셀 규칙:** 파일명 `Dev_Schedule.xlsx`, 시트명 `Dev Tracker`, 헤더 3행.
+> 컬럼명이 바뀌면 [`scripts/build.mjs`](scripts/build.mjs) 맨 위 목록만 고치면 됩니다.
+> 시트가 깨지면 Actions가 배포를 막고 에러로 알려줍니다.
 
 ---
 
-## 팀에 공유하기
+## 최초 1회 설정
 
-이 저장소는 Private이라 GitHub Pages를 쓰지 않습니다. 아래 중 편한 방법으로 배포하세요.
+저장소 **Settings → Pages → Source: GitHub Actions** 로 지정.
+그 다음부터는 푸시할 때마다 자동입니다.
 
-**방법 1 — 사내 공유드라이브 (가장 간단)**
+원본 엑셀은 배포 산출물에서 제외되므로 사이트에서 직접 다운로드되지는 않습니다.
+다만 저장소가 Public이면 저장소 자체를 통해 접근할 수 있습니다.
 
-`board` 폴더 전체를 공유드라이브에 복사 → 팀원은 `index.html` 더블클릭.
-업데이트할 때 `data/tracker.js` 만 덮어써도 됩니다.
-
-**방법 2 — 사내 웹서버 / 인트라넷**
-
-같은 폴더를 정적 호스팅에 올리면 끝. 빌드도 런타임도 필요 없습니다.
-
-**방법 3 — 팀원이 직접 clone**
-
-```bash
-git clone https://github.com/bstars00-rgb/Dev-Tracker.git
-```
-
-이후 `git pull` 하면 최신 상태가 됩니다.
-
-> 필요한 파일: `index.html`, `styles.css`, `app.js`, `data/tracker.js` — 이 4개면 화면이 뜹니다.
-> 엑셀 원본과 스크립트는 업데이트하는 사람만 있으면 됩니다.
+사내에서만 쓰고 싶으면 이 폴더를 공유드라이브에 복사해도 똑같이 동작합니다.
+화면에 필요한 파일은 `index.html`, `styles.css`, `app.js`, `data/tracker.js` 네 개뿐입니다.
 
 ---
 
@@ -59,7 +52,7 @@ git clone https://github.com/bstars00-rgb/Dev-Tracker.git
 | | |
 |---|---|
 | 상단 타일 | 클릭하면 그 조건으로 필터 (Live / 개발중 / 주의 필요 / 90일+ 방치 등) |
-| 검색 | 파트너·PIC·카테고리·단계 검색. `/` 키로 바로 포커스, `Esc` 로 해제 |
+| 검색 | 파트너·PIC·카테고리·단계 검색. `/` 키로 포커스, `Esc` 로 해제 |
 | 필터 | Status · Category · PIC · 활동상태 조합 가능 |
 | 정렬 | 컬럼 헤더 클릭 |
 | Stage track | 11단계를 칸으로 표시 — 채워진 칸이 날짜가 기록된 단계, 마우스 올리면 날짜 |
@@ -87,7 +80,7 @@ data/
   tracker.js          자동 생성 — 화면이 읽는 파일
   tracker.json        자동 생성 — 다른 도구에서 쓸 원본 데이터
 scripts/build.mjs     엑셀 → JSON 변환기
-scripts/serve.mjs     로컬 미리보기용 (npm run preview)
+scripts/serve.mjs     로컬 미리보기 (npm run preview)
 update.bat            더블클릭용
 ```
 
