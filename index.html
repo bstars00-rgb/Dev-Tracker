@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,11 +15,15 @@
         <h1>Dev Tracker</h1>
       </div>
       <div class="meta" id="meta"></div>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="ko">한국어</button>
+        <button type="button" data-lang="en">English</button>
+      </div>
     </header>
 
     <nav class="tabs" id="tabs" role="tablist" aria-label="View">
-      <button type="button" role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
-      <button type="button" role="tab" data-tab="list" aria-selected="false">All projects</button>
+      <button type="button" role="tab" data-tab="dashboard" aria-selected="true" data-i18n="nav.dashboard"></button>
+      <button type="button" role="tab" data-tab="list" aria-selected="false" data-i18n="nav.list"></button>
     </nav>
 
     <main>
@@ -27,27 +31,19 @@
       <section id="view-dashboard" role="tabpanel" aria-label="Dashboard">
         <div class="kpis" id="kpis"></div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Stage funnel</h2>
-            <p>몇 개가 각 단계까지 갔고, 지금 어디에 몰려 있는지. 막대를 클릭하면 그 단계에 머무는 건들만 리스트로 넘어갑니다.</p>
-          </div>
-          <div class="funnel" id="funnel"></div>
-        </section>
-
         <div class="grid-2">
           <section class="panel">
             <div class="panel-head">
-              <h2>PIC별 부하</h2>
-              <p>담당 건수와 그중 손이 필요한 건수. 이름을 클릭하면 해당 담당자 건만 봅니다.</p>
+              <h2 data-i18n="panel.pic.title"></h2>
+              <p data-i18n="panel.pic.desc"></p>
             </div>
             <div class="breakdown" id="by-pic"></div>
           </section>
 
           <section class="panel">
             <div class="panel-head">
-              <h2>카테고리별 현황</h2>
-              <p>연동 유형별 분포와 위험 비중.</p>
+              <h2 data-i18n="panel.category.title"></h2>
+              <p data-i18n="panel.category.desc"></p>
             </div>
             <div class="breakdown" id="by-category"></div>
           </section>
@@ -56,16 +52,16 @@
         <div class="grid-2">
           <section class="panel">
             <div class="panel-head">
-              <h2>마지막 활동 경과</h2>
-              <p>완료(Live) 건은 제외한, 진행 중 건들의 침묵 기간 분포.</p>
+              <h2 data-i18n="panel.aging.title"></h2>
+              <p data-i18n="panel.aging.desc"></p>
             </div>
             <div class="breakdown" id="by-aging"></div>
           </section>
 
           <section class="panel">
             <div class="panel-head">
-              <h2>지금 손봐야 할 10건</h2>
-              <p>방치 심각도 → 진행률 → 경과일 순. 클릭하면 해당 건으로 이동합니다.</p>
+              <h2 data-i18n="panel.top.title"></h2>
+              <p data-i18n="panel.top.desc"></p>
             </div>
             <ol class="toplist" id="top-attention"></ol>
           </section>
@@ -75,29 +71,15 @@
       <!-- ============================================================ LIST -->
       <section id="view-list" role="tabpanel" aria-label="All projects" hidden>
         <div class="toolbar" role="group" aria-label="Filters">
-          <input
-            id="search"
-            type="search"
-            placeholder="Search partner, PIC, stage…   ( / )"
-            autocomplete="off"
-            aria-label="Search"
-          />
-          <select id="f-status" aria-label="Status"><option value="">Status: all</option></select>
-          <select id="f-category" aria-label="Category"><option value="">Category: all</option></select>
-          <select id="f-pic" aria-label="PIC"><option value="">PIC: all</option></select>
-          <select id="f-health" aria-label="Activity">
-            <option value="">Activity: all</option>
-            <option value="norecord">No activity record</option>
-            <option value="stalled90">Stalled 90d+</option>
-            <option value="stalled30">Stalled 30d+</option>
-            <option value="watch">Quiet 14d+</option>
-            <option value="attention">Needs attention (any of the above)</option>
-            <option value="live">Live</option>
-          </select>
-          <button type="button" class="chipfilter" id="f-stage" hidden></button>
+          <input id="search" type="search" autocomplete="off" />
+          <select id="f-status"></select>
+          <select id="f-category"></select>
+          <select id="f-pic"></select>
+          <select id="f-stage"></select>
+          <select id="f-health"></select>
           <span class="spacer"></span>
-          <button id="export" type="button" class="btn">Export CSV</button>
-          <button id="reset" type="button" class="btn ghost">Reset</button>
+          <button id="export" type="button" class="btn" data-i18n="btn.export"></button>
+          <button id="reset" type="button" class="btn ghost" data-i18n="btn.reset"></button>
         </div>
 
         <p class="resultline" id="resultline" aria-live="polite"></p>
@@ -106,33 +88,34 @@
           <table id="table">
             <thead>
               <tr>
-                <th scope="col" class="num sortable" data-sort="no">#</th>
-                <th scope="col" class="sortable" data-sort="project">Partner</th>
-                <th scope="col" class="sortable" data-sort="category">Category</th>
-                <th scope="col" class="sortable" data-sort="status">Status</th>
-                <th scope="col" class="sortable" data-sort="progress">Progress</th>
-                <th scope="col" class="track-col">Stage track</th>
-                <th scope="col" class="sortable" data-sort="pic">PIC</th>
-                <th scope="col" class="c-team sortable" data-sort="team">Team</th>
-                <th scope="col" class="sortable" data-sort="devLoad">Dev load</th>
-                <th scope="col" class="c-switching sortable" data-sort="switching">Switching</th>
-                <th scope="col" class="sortable" data-sort="lastActivity">Last activity</th>
-                <th scope="col" class="num sortable" data-sort="days">Days</th>
+                <th scope="col" class="num sortable" data-sort="no" data-i18n="th.no"></th>
+                <th scope="col" class="sortable" data-sort="project" data-i18n="th.partner"></th>
+                <th scope="col" class="sortable" data-sort="category" data-i18n="th.category"></th>
+                <th scope="col" class="sortable" data-sort="status" data-i18n="th.status"></th>
+                <th scope="col" class="sortable" data-sort="progress" data-i18n="th.progress"></th>
+                <th scope="col" class="track-col" data-i18n="th.track"></th>
+                <th scope="col" class="sortable" data-sort="pic" data-i18n="th.pic"></th>
+                <th scope="col" class="c-team sortable" data-sort="team" data-i18n="th.team"></th>
+                <th scope="col" class="sortable" data-sort="devLoad" data-i18n="th.load"></th>
+                <th scope="col" class="c-switching sortable" data-sort="switching" data-i18n="th.switching"></th>
+                <th scope="col" class="sortable" data-sort="lastActivity" data-i18n="th.last"></th>
+                <th scope="col" class="num sortable" data-sort="days" data-i18n="th.days"></th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
-          <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+          <p class="empty" id="empty" hidden data-i18n="list.empty"></p>
         </div>
       </section>
 
       <footer class="foot">
-        <span>Excel is the source of truth. This page is read-only — edit the sheet, push, done.</span>
-        <span class="keys"><kbd>/</kbd> search · <kbd>Esc</kbd> clear · click a row for stage dates</span>
+        <span data-i18n="foot.source"></span>
+        <span class="keys" id="foot-keys"></span>
       </footer>
     </main>
 
     <script src="data/tracker.js"></script>
+    <script src="i18n.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
