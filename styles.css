@@ -95,7 +95,7 @@ body {
 .meta { margin-left: auto; color: var(--muted); font-size: 12px; }
 .meta b { color: var(--text); font-weight: 600; }
 
-main { padding: 14px 18px 40px; }
+main { padding: 14px 18px 40px; max-width: 1680px; }
 
 /* ---------------------------------------------------------------- tabs */
 .tabs {
@@ -138,7 +138,7 @@ main { padding: 14px 18px 40px; }
 /* ---------------------------------------------------------------- kpi cards */
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -174,11 +174,11 @@ main { padding: 14px 18px 40px; }
   color: var(--muted);
 }
 
-.kpi-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.kpi-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; min-width: 0; }
 .kpi-value { font-size: 30px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
 .kpi.alert .kpi-value { color: var(--danger); }
 .kpi.good .kpi-value { color: var(--live); }
-.kpi-aux { font: 11px/1 var(--mono); color: var(--faint); white-space: nowrap; }
+.kpi-aux { flex-shrink: 0; font: 11px/1 var(--mono); color: var(--faint); white-space: nowrap; }
 
 /* Composition bar: what the total is made of, at a glance. */
 .kpi-bar { display: flex; height: 5px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
@@ -196,13 +196,9 @@ main { padding: 14px 18px 40px; }
 
 .kpi-note {
   font-size: 11px;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--muted);
-  min-height: 2.7em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  min-height: 2.8em;
 }
 
 /* ---------------------------------------------------------------- panels */
@@ -225,7 +221,11 @@ main { padding: 14px 18px 40px; }
 .panel-head p { margin: 3px 0 0; font-size: 11.5px; color: var(--muted); }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 1200px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
 
 /* ---------------------------------------------------------------- breakdown */
 .breakdown { padding: 8px 6px 10px; }
@@ -600,9 +600,12 @@ kbd {
 /* ---------------------------------------------------------------- effort x impact */
 .matrix {
   display: grid;
-  grid-template-columns: 78px 1fr 1fr;
+  grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr);
   gap: 6px;
   padding: 10px 13px 4px;
+  /* Sitting in a half-width panel already keeps this compact; the cap only matters
+     when the grid collapses to one column on a narrow screen. */
+  max-width: 860px;
 }
 
 .mx-corner { }
@@ -639,7 +642,7 @@ kbd {
   padding: 9px 11px 10px;
   color: inherit;
   font: inherit;
-  min-height: 96px;
+  min-height: 92px;
   transition: border-color 0.12s, transform 0.08s;
 }
 .mx-box:hover { transform: translateY(-1px); border-color: var(--faint); }
@@ -652,7 +655,7 @@ kbd {
 .mx-box.quickwin .mx-name { color: var(--live); }
 .mx-box.major .mx-name { color: var(--dev); }
 .mx-box.justify .mx-name { color: var(--danger); }
-.mx-value { font-size: 26px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.mx-value { font-size: 24px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
 .mx-bar { display: flex; height: 4px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
 .mx-bar .seg { height: 100%; }
 .mx-desc { font-size: 11px; line-height: 1.35; color: var(--muted); }

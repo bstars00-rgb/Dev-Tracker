@@ -289,7 +289,8 @@
         label: t('card.impact'),
         value: highImpact.length,
         tone: 'impact',
-        aux: t('card.impact.hint'),
+        aux: t('card.share', { n: pct(highImpact.length, total) }),
+        hint: t('card.impact.hint'),
         segments: [
           { key: 'idle2', n: impactNotStarted, label: t('card.seg.contact') },
           { key: 'rest', n: impactInFlight, label: t('card.seg.inflight') },
@@ -391,7 +392,7 @@
         .map((s) => `<span class="seg ${s.key}" style="width:${(s.n / sum) * 100}%" title="${escape(s.label)} ${s.n}"></span>`)
         .join('');
       return `
-        <button type="button" class="kpi ${c.tone ?? ''}" data-kpi="${i}">
+        <button type="button" class="kpi ${c.tone ?? ''}" data-kpi="${i}"${c.hint ? ` title="${escape(c.hint)}"` : ''}>
           <span class="kpi-label">${escape(c.label)}</span>
           <span class="kpi-row">
             <span class="kpi-value">${c.value}</span>

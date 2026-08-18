@@ -6,7 +6,7 @@
     <title>OHMY Dev Tracker</title>
     <meta name="description" content="Read-only view of the OHMYHOTEL API integration Dev Tracker." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📡</text></svg>" />
-    <link rel="stylesheet" href="styles.css?v=20260818T0658" />
+    <link rel="stylesheet" href="styles.css?v=20260818T0711" />
   </head>
   <body>
     <header class="topbar">
@@ -31,16 +31,28 @@
       <section id="view-dashboard" role="tabpanel" aria-label="Dashboard">
         <div class="kpis" id="kpis"></div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 data-i18n="panel.matrix.title"></h2>
-              <p data-i18n="panel.matrix.desc"></p>
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 data-i18n="panel.matrix.title"></h2>
+                <p data-i18n="panel.matrix.desc"></p>
+              </div>
             </div>
-          </div>
-          <div class="matrix" id="matrix"></div>
-          <p class="panel-foot" id="matrix-note"></p>
-        </section>
+            <div class="matrix" id="matrix"></div>
+            <p class="panel-foot" id="matrix-note"></p>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 data-i18n="panel.top.title"></h2>
+                <p data-i18n="panel.top.desc"></p>
+              </div>
+            </div>
+            <ol class="toplist" id="top-attention"></ol>
+          </section>
+        </div>
 
         <section class="panel">
           <div class="panel-head">
@@ -71,39 +83,35 @@
           <p class="panel-foot" data-i18n="phase.ref"></p>
         </section>
 
-        <div class="grid-2">
+        <div class="grid-3">
           <section class="panel">
             <div class="panel-head">
-              <h2 data-i18n="panel.pic.title"></h2>
-              <p data-i18n="panel.pic.desc"></p>
+              <div>
+                <h2 data-i18n="panel.pic.title"></h2>
+                <p data-i18n="panel.pic.desc"></p>
+              </div>
             </div>
             <div class="breakdown" id="by-pic"></div>
           </section>
 
           <section class="panel">
             <div class="panel-head">
-              <h2 data-i18n="panel.category.title"></h2>
-              <p data-i18n="panel.category.desc"></p>
+              <div>
+                <h2 data-i18n="panel.category.title"></h2>
+                <p data-i18n="panel.category.desc"></p>
+              </div>
             </div>
             <div class="breakdown" id="by-category"></div>
           </section>
-        </div>
 
-        <div class="grid-2">
           <section class="panel">
             <div class="panel-head">
-              <h2 data-i18n="panel.aging.title"></h2>
-              <p data-i18n="panel.aging.desc"></p>
+              <div>
+                <h2 data-i18n="panel.aging.title"></h2>
+                <p data-i18n="panel.aging.desc"></p>
+              </div>
             </div>
             <div class="breakdown" id="by-aging"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <h2 data-i18n="panel.top.title"></h2>
-              <p data-i18n="panel.top.desc"></p>
-            </div>
-            <ol class="toplist" id="top-attention"></ol>
           </section>
         </div>
       </section>
@@ -155,8 +163,8 @@
       </footer>
     </main>
 
-    <script src="data/tracker.js?v=20260818T0658"></script>
-    <script src="i18n.js?v=20260818T0658"></script>
-    <script src="app.js?v=20260818T0658"></script>
+    <script src="data/tracker.js?v=20260818T0711"></script>
+    <script src="i18n.js?v=20260818T0711"></script>
+    <script src="app.js?v=20260818T0711"></script>
   </body>
 </html>
