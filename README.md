@@ -6,7 +6,7 @@
 - `index.html` 더블클릭하면 바로 열림 (인터넷 연결도 불필요)
 - GitHub Pages로 자동 배포 — 팀은 링크 하나만 있으면 됩니다
 
-**링크:** https://bstars00-rgb.github.io/Intergration-Tracker/
+**링크:** https://bstars00-rgb.github.io/Integration-Tracker/
 
 ---
 
