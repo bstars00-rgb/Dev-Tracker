@@ -95,7 +95,7 @@ body {
 .meta { margin-left: auto; color: var(--muted); font-size: 12px; }
 .meta b { color: var(--text); font-weight: 600; }
 
-main { padding: 14px 18px 40px; max-width: 1680px; }
+main { padding: 14px 18px 40px; }
 
 /* ---------------------------------------------------------------- tabs */
 .tabs {
@@ -603,9 +603,8 @@ kbd {
   grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr);
   gap: 6px;
   padding: 10px 13px 4px;
-  /* Sitting in a half-width panel already keeps this compact; the cap only matters
-     when the grid collapses to one column on a narrow screen. */
-  max-width: 860px;
+  /* No cap needed: the half-width panel constrains this on wide screens, and on a
+     narrow one the grid collapses to a single column that is narrow anyway. */
 }
 
 .mx-corner { }
