@@ -213,6 +213,28 @@ window.TRACKER = ${JSON.stringify(payload)};
 `,
 );
 
+// ---------------------------------------------------------------- cache busting
+// GitHub Pages serves every asset with max-age=600, so after an update a returning
+// visitor can get the new index.html against a cached app.js and see a half-rendered
+// page for ten minutes. Stamping the build time onto each asset URL makes each deploy
+// a new URL, so the browser always fetches a matching set.
+const stamp = payload.generatedAt.replace(/[-:]/g, '').slice(0, 13); // 20260818T1352
+const indexPath = path.join(root, 'index.html');
+let html = fs.readFileSync(indexPath, 'utf8');
+const before = html;
+
+const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+for (const asset of ['styles.css', 'data/tracker.js', 'i18n.js', 'app.js']) {
+  const pattern = new RegExp(`((?:src|href)=")${escapeRe(asset)}(\\?v=[^"]*)?(")`, 'g');
+  html = html.replace(pattern, `$1${asset}?v=${stamp}$3`);
+}
+
+if (html !== before) {
+  fs.writeFileSync(indexPath, html);
+  console.log(`  asset version stamped: ?v=${stamp}`);
+}
+
 const size = (fs.statSync(OUTPUT).size / 1024).toFixed(0);
 console.log(`\n  ${rows.length} projects  ->  data/tracker.json (${size} kB)`);
 console.log(`  status:  ${Object.entries(payload.counts.byStatus).map(([k, v]) => `${k} ${v}`).join('  ·  ')}`);
