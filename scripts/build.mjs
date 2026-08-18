@@ -28,45 +28,71 @@ const HEADER_ROW = 3; // 1-based row holding the column names
 /** Sheet names tried in order, so an older workbook still builds. */
 const SHEET_CANDIDATES = ['Dev Tracker (IT)', 'Dev Tracker'];
 
-/** The 12 milestone columns and the progress weight each one represents. */
-const STAGES = [
-  { n: 1, column: '① 미팅/1st Contact (10%)', label: '1st Contact', short: 'Contact', weight: 10 },
-  { n: 2, column: '② NDA 체결 (20%)', label: 'NDA Signed', short: 'NDA', weight: 20 },
-  { n: 3, column: '③ 계약 체결 (30%)', label: 'Contract Signed', short: 'Contract', weight: 30 },
-  { n: 4, column: '④ SLA 확정 (40%)', label: 'SLA Finalized', short: 'SLA', weight: 40 },
-  { n: 5, column: '⑤ 개발 착수 예정 (45%)', label: 'Dev Kickoff Planned', short: 'Kickoff', weight: 45 },
-  { n: 6, column: '⑥ 개발 착수/SPEC·DEV Key (50%)', label: 'Dev Kickoff / SPEC / DEV Key', short: 'Dev', weight: 50 },
-  { n: 7, column: '⑦ Certification (60%)', label: 'Certification', short: 'Cert', weight: 60 },
-  { n: 8, column: '⑧ Live Test (70%)', label: 'Live Test', short: 'Test', weight: 70 },
-  { n: 9, column: '⑨ 개발 완료 예정 (75%)', label: 'Dev Completion Planned', short: 'Complete', weight: 75 },
-  { n: 10, column: '⑩ Live Open (80%)', label: 'Live Open', short: 'Open', weight: 80 },
-  { n: 11, column: '⑪ 첫 부킹 (90%)', label: 'First Booking', short: 'Booking', weight: 90 },
-  { n: 12, column: '⑫ API Live 완료 (100%)', label: 'API Live Complete', short: 'Live', weight: 100 },
-];
+/**
+ * The workbook has appeared in two shapes. The newer "Dev Tracker (IT)" sheet runs 12
+ * milestones from a 10% first contact; the older "Dev Tracker" sheet starts at NDA and
+ * has 11. Both are supported and the right one is chosen by looking at the header row,
+ * so whichever version lands in the CRM folder on a given week still builds.
+ */
+const STAGE_SETS = {
+  twelve: [
+    { n: 1, column: '① 미팅/1st Contact (10%)', label: '1st Contact', short: 'Contact', weight: 10 },
+    { n: 2, column: '② NDA 체결 (20%)', label: 'NDA Signed', short: 'NDA', weight: 20 },
+    { n: 3, column: '③ 계약 체결 (30%)', label: 'Contract Signed', short: 'Contract', weight: 30 },
+    { n: 4, column: '④ SLA 확정 (40%)', label: 'SLA Finalized', short: 'SLA', weight: 40 },
+    { n: 5, column: '⑤ 개발 착수 예정 (45%)', label: 'Dev Kickoff Planned', short: 'Kickoff', weight: 45 },
+    { n: 6, column: '⑥ 개발 착수/SPEC·DEV Key (50%)', label: 'Dev Kickoff / SPEC / DEV Key', short: 'Dev', weight: 50 },
+    { n: 7, column: '⑦ Certification (60%)', label: 'Certification', short: 'Cert', weight: 60 },
+    { n: 8, column: '⑧ Live Test (70%)', label: 'Live Test', short: 'Test', weight: 70 },
+    { n: 9, column: '⑨ 개발 완료 예정 (75%)', label: 'Dev Completion Planned', short: 'Complete', weight: 75 },
+    { n: 10, column: '⑩ Live Open (80%)', label: 'Live Open', short: 'Open', weight: 80 },
+    { n: 11, column: '⑪ 첫 부킹 (90%)', label: 'First Booking', short: 'Booking', weight: 90 },
+    { n: 12, column: '⑫ API Live 완료 (100%)', label: 'API Live Complete', short: 'Live', weight: 100 },
+  ],
+  eleven: [
+    { n: 1, column: '① NDA Signed (20%)', label: 'NDA Signed', short: 'NDA', weight: 20 },
+    { n: 2, column: '② Contract Signed (30%)', label: 'Contract Signed', short: 'Contract', weight: 30 },
+    { n: 3, column: '③ SLA Finalized (40%)', label: 'SLA Finalized', short: 'SLA', weight: 40 },
+    { n: 4, column: '④ Dev Kickoff Planned (45%)', label: 'Dev Kickoff Planned', short: 'Kickoff', weight: 45 },
+    { n: 5, column: '⑤ Dev Kickoff / SPEC·DEV Key (50%)', label: 'Dev Kickoff / SPEC / DEV Key', short: 'Dev', weight: 50 },
+    { n: 6, column: '⑥ Certification (60%)', label: 'Certification', short: 'Cert', weight: 60 },
+    { n: 7, column: '⑦ Live Test (70%)', label: 'Live Test', short: 'Test', weight: 70 },
+    { n: 8, column: '⑧ Dev Completion Planned (75%)', label: 'Dev Completion Planned', short: 'Complete', weight: 75 },
+    { n: 9, column: '⑨ Live Open (80%)', label: 'Live Open', short: 'Open', weight: 80 },
+    { n: 10, column: '⑩ First Booking (90%)', label: 'First Booking', short: 'Booking', weight: 90 },
+    { n: 11, column: '⑪ API Live Complete (100%)', label: 'API Live Complete', short: 'Live', weight: 100 },
+  ],
+};
 
-/** Columns read by name, so a reordered sheet still works. */
+/**
+ * Columns are matched by name, not position, and each field lists every header the
+ * workbook has used. A reordered sheet, a renamed column or a newly inserted one (the
+ * latest file added Country in third place) all keep working.
+ */
 const COLUMNS = {
-  no: 'No.',
-  category: 'Category',
-  project: 'Project',
-  direction: '연동 방향 (API Direction)',
-  impact: 'Biz Impact',
-  devLoad: 'OHMY 개발 부하',
-  devOwner: '개발 주체 (Dev Owner)',
-  team: '담당팀',
-  pic: 'PIC (Sales)',
-  status: 'Status',
-  plannedStart: '계획 시작',
-  plannedEnd: '계획 종료',
-  progress: '진행율',
-  currentStage: '현재 단계',
-  nextGate: '다음 게이트',
-  lastActivity: '최근 활동일',
-  delay: '지연 체크',
-  itOwner: 'IT 담당자',
-  blocker: '현재 블로커 / 이슈',
-  note: '비고',
-  consistency: 'Status vs 날짜 정합성',
+  no: ['No.'],
+  category: ['Category'],
+  project: ['Project'],
+  country: ['Country'],
+  direction: ['연동 방향 (API Direction)'],
+  impact: ['Biz Impact'],
+  devLoad: ['OHMY 개발 부하', 'OHMY Dev Load'],
+  devOwner: ['개발 주체 (Dev Owner)'],
+  switching: ['Switching'],
+  team: ['담당팀', 'Handling Team'],
+  pic: ['PIC (Sales)'],
+  status: ['Status'],
+  plannedStart: ['계획 시작'],
+  plannedEnd: ['계획 종료'],
+  progress: ['진행율', 'Progress %'],
+  currentStage: ['현재 단계'],
+  nextGate: ['다음 게이트'],
+  lastActivity: ['최근 활동일', 'Last Activity'],
+  delay: ['지연 체크', 'Delay Check'],
+  itOwner: ['IT 담당자'],
+  blocker: ['현재 블로커 / 이슈'],
+  note: ['비고'],
+  consistency: ['Status vs 날짜 정합성'],
 };
 
 /* ---------------------------------------------------------------- helpers */
@@ -121,9 +147,14 @@ function stageLabelOf(value) {
   return matched ? matched.label : text.replace(/^[①-⑫]\s*/, '').replace(/\s*\(\d+%\)$/, '');
 }
 
-/** The sheet has no Switching column any more; the platform shows up in Dev Owner. */
+/**
+ * Older sheets carry a Switching column; the newer one dropped it and the platform
+ * shows up inside Dev Owner instead ("OHMY/ TGX", "Shiji or OHMY"). Prefer the column.
+ */
 const SWITCH_PLATFORMS = ['TGX', 'Shiji', 'SHIJI', 'Travelgate', 'Derbysoft', 'Juniper'];
-function parseSwitching(devOwner) {
+function parseSwitching(column, devOwner) {
+  const explicit = clean(column);
+  if (explicit) return explicit;
   if (!devOwner) return null;
   const hit = SWITCH_PLATFORMS.find((p) => new RegExp(p, 'i').test(devOwner));
   return hit ? (hit.toLowerCase() === 'shiji' ? 'SHIJI' : hit) : null;
@@ -155,7 +186,18 @@ const grid = XLSX.utils.sheet_to_json(workbook.Sheets[SHEET], { header: 1, raw: 
 const headers = (grid[HEADER_ROW - 1] ?? []).map((h) => (h === null ? '' : String(h).replace(/\s+/g, ' ').trim()));
 const columnOf = (name) => headers.indexOf(String(name).replace(/\s+/g, ' ').trim());
 
-const IDX = Object.fromEntries(Object.entries(COLUMNS).map(([key, name]) => [key, columnOf(name)]));
+const IDX = Object.fromEntries(
+  Object.entries(COLUMNS).map(([key, names]) => {
+    const found = names.map(columnOf).find((i) => i >= 0);
+    return [key, found === undefined ? -1 : found];
+  }),
+);
+
+// Whichever milestone layout matches more of this header row is the one in use.
+const matches = (set) => set.filter((stage) => columnOf(stage.column) >= 0).length;
+const [setName, STAGES] = matches(STAGE_SETS.twelve) >= matches(STAGE_SETS.eleven)
+  ? ['twelve', STAGE_SETS.twelve]
+  : ['eleven', STAGE_SETS.eleven];
 
 if (IDX.project < 0) {
   console.error(`\nNo "Project" column on row ${HEADER_ROW} of "${SHEET}". Has the layout changed?`);
@@ -170,7 +212,7 @@ if (missingStages.length) {
 }
 
 const missingOptional = Object.entries(IDX).filter(([, i]) => i < 0).map(([k]) => k);
-if (missingOptional.length) console.warn(`Warning: columns not found: ${missingOptional.join(', ')}`);
+if (missingOptional.length) console.warn(`Note: columns not present in this workbook: ${missingOptional.join(', ')}`);
 
 /* ---------------------------------------------------------------- transform */
 const today = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
@@ -228,13 +270,14 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
     project,
     status,
     category: clean(at(raw, 'category')) ?? 'Uncategorised',
+    country: clean(at(raw, 'country')),
     impact: clean(at(raw, 'impact')),
     devLoad: devLoad.level,
     devLoadLabel: devLoad.label,
     devOwner,
     direction: direction.key,
     directionLabel: direction.label,
-    switching: parseSwitching(devOwner),
+    switching: parseSwitching(at(raw, 'switching'), devOwner),
     team: clean(at(raw, 'team')),
     pic: clean(at(raw, 'pic')),
     itOwner: clean(at(raw, 'itOwner')),
@@ -268,6 +311,7 @@ const payload = {
   sourceFile: path.basename(SOURCE),
   sourceSheet: SHEET,
   sourceModified: fs.statSync(SOURCE).mtime.toISOString(),
+  stageLayout: setName,
   stageModel: STAGES.map(({ n, label, short, weight }) => ({ n, label, short, weight })),
   counts: {
     total: rows.length,
@@ -277,6 +321,9 @@ const payload = {
     withImpact: rows.filter((r) => r.impact).length,
     withDevOwner: rows.filter((r) => r.devOwner).length,
     inconsistent: rows.filter((r) => !r.consistent).length,
+    // Whether the sheet carries the column at all — 0 mismatches because the check
+    // does not exist is a different statement from 0 mismatches because it passed.
+    hasConsistency: IDX.consistency >= 0,
   },
   rows,
 };
@@ -313,7 +360,7 @@ if (html !== before) {
 }
 
 const size = (fs.statSync(OUTPUT).size / 1024).toFixed(0);
-console.log(`\n  ${rows.length} projects from "${SHEET}"  ->  data/tracker.json (${size} kB)`);
+console.log(`\n  ${rows.length} projects from "${SHEET}" (${STAGES.length}-stage layout)  ->  data/tracker.json (${size} kB)`);
 console.log(`  status:  ${Object.entries(payload.counts.byStatus).map(([k, v]) => `${k} ${v}`).join('  ·  ')}`);
 console.log(`  health:  ${Object.entries(payload.counts.byHealth).map(([k, v]) => `${k} ${v}`).join('  ·  ')}`);
 

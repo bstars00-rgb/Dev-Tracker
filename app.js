@@ -376,7 +376,9 @@
           { key: 'risk', n: mismatched.length, label: t('consistency.bad') },
           { key: 'idle', n: total - mismatched.length, label: '—' },
         ],
-        note: mismatched.length
+        note: !(data.counts?.hasConsistency ?? true)
+          ? t('card.mismatch.na')
+          : mismatched.length
           ? t('card.mismatch.note', {
               top: Object.entries(
                 mismatched.reduce((a, r) => ((a[r.consistency ?? '—'] = (a[r.consistency ?? '—'] ?? 0) + 1), a), {}),

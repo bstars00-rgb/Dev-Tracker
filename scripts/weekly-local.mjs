@@ -32,7 +32,9 @@ const flag = (name) => {
  *   2. DEV_TRACKER_XLSX
  *   3. the CRM folder the existing weekly pipeline downloads into, resolved relative to
  *      this repo so no username is baked in: <repo>/../../REPORT/3. CRM
- * In case 3 the newest matching workbook wins, and a "_latest_" copy is preferred.
+ * In case 3 the most recently modified workbook wins. A "_latest_" copy only breaks a
+ * tie — preferring it outright meant a file downloaded by hand today lost to a
+ * "_latest_" copy from last week.
  */
 function discover() {
   const dir = path.resolve(root, '..', '..', 'REPORT', '3. CRM');
@@ -46,7 +48,7 @@ function discover() {
       latest: name.toLowerCase().startsWith('_latest_'),
       mtime: fs.statSync(path.join(dir, name)).mtimeMs,
     }))
-    .sort((a, b) => Number(b.latest) - Number(a.latest) || b.mtime - a.mtime);
+    .sort((a, b) => b.mtime - a.mtime || Number(b.latest) - Number(a.latest));
 
   return candidates[0]?.file ?? null;
 }
