@@ -26,7 +26,32 @@ const flag = (name) => {
   const i = args.indexOf(name);
   return i === -1 ? null : (args[i + 1] ?? '');
 };
-const source = flag('--source') ?? process.env.DEV_TRACKER_XLSX ?? null;
+/**
+ * Where the workbook comes from, in order of preference:
+ *   1. --source <path>
+ *   2. DEV_TRACKER_XLSX
+ *   3. the CRM folder the existing weekly pipeline downloads into, resolved relative to
+ *      this repo so no username is baked in: <repo>/../../REPORT/3. CRM
+ * In case 3 the newest matching workbook wins, and a "_latest_" copy is preferred.
+ */
+function discover() {
+  const dir = path.resolve(root, '..', '..', 'REPORT', '3. CRM');
+  if (!fs.existsSync(dir)) return null;
+
+  const candidates = fs
+    .readdirSync(dir)
+    .filter((name) => /dev_schedule.*\.xlsx$/i.test(name) && !name.startsWith('~$'))
+    .map((name) => ({
+      file: path.join(dir, name),
+      latest: name.toLowerCase().startsWith('_latest_'),
+      mtime: fs.statSync(path.join(dir, name)).mtimeMs,
+    }))
+    .sort((a, b) => Number(b.latest) - Number(a.latest) || b.mtime - a.mtime);
+
+  return candidates[0]?.file ?? null;
+}
+
+const source = flag('--source') ?? process.env.DEV_TRACKER_XLSX ?? discover();
 const push = !args.includes('--no-push');
 
 const git = (...a) => execFileSync('git', a, { cwd: root, encoding: 'utf8' }).trim();

@@ -14,7 +14,8 @@
 
   const ROWS = data.rows;
   const STAGE_MODEL = data.stageModel ?? [];
-  const STEPS = [{ n: 0, label: 'Contact', weight: 0 }, ...STAGE_MODEL];
+  // Weight 0 is not a stage — it means the sheet has no milestone date at all.
+  const untracked = () => ({ n: 0, label: t('stage.untracked'), weight: 0 });
 
   /* ================================================================ i18n */
   const PACKS = window.I18N ?? { ko: {}, en: {} };
@@ -79,6 +80,7 @@
     route: '',
     load: '',
     klass: '',
+    consistency: '',
     sort: 'attention',
     dir: 'asc',
     open: new Set(),
@@ -115,7 +117,7 @@
     const spans = ROWS.filter((r) => r.progress === 100)
       .map((r) => {
         const dates = r.stages.filter((s) => s.date).map((s) => Date.parse(`${s.date}T00:00:00Z`));
-        const end = r.stages.find((s) => s.n === 11 && s.date);
+        const end = r.stages.find((s) => s.weight === 100 && s.date);
         if (dates.length < 2 || !end) return null;
         const span = Date.parse(`${end.date}T00:00:00Z`) - Math.min(...dates);
         return span > 0 ? Math.round(span / 86_400_000) : null;
@@ -135,7 +137,10 @@
    * "OHMY Dev Load" in the sheet measures OUR effort, which is what makes this readable.
    */
   function routeOf(row) {
+    // The sheet's own Dev Owner column wins when it is filled in; the load/switching
+    // heuristic is only the fallback for rows that leave it blank.
     if (row.switching) return 'switching';
+    if (row.devOwner) return /^OHMY$/i.test(row.devOwner.trim()) ? 'direct' : 'partner';
     if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
     return 'partner';
   }
@@ -185,12 +190,14 @@
   function watchLevel(row) {
     const route = routeOf(row);
 
-    // Stages where OHMY engineering itself owes a deliverable: DEV key, live key,
-    // launch monitoring. True whoever writes the client code.
-    if ([40, 45, 70, 75, 80, 90].includes(row.progress)) return 'act';
+    // Stages where OHMY engineering itself owes a deliverable, whoever writes the
+    // client code: the DEV key (40/45), the certification pass judgement (60), the live
+    // key (70/75) and launch monitoring (80/90). The deck is explicit that the cert
+    // document and logs are verified by OHMY before a live key is issued.
+    if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) return 'act';
 
-    // The build itself follows the route.
-    if (row.progress === 50 || row.progress === 60) {
+    // Only the build itself follows the route.
+    if (row.progress === 50) {
       if (route === 'direct') return 'act';
       return route === 'switching' ? 'verify' : 'standby';
     }
@@ -232,6 +239,7 @@
     const stalled90 = ROWS.filter((r) => r.health === 'stalled90');
     const norecord = ROWS.filter((r) => r.health === 'norecord');
     const highImpact = ROWS.filter((r) => r.impact === 'High');
+    const mismatched = ROWS.filter((r) => r.consistent === false);
 
     const statusCounts = [...new Set(ROWS.map((r) => r.status))]
       .map((s) => ({ status: s, n: ROWS.filter((r) => r.status === s).length }))
@@ -296,7 +304,9 @@
           { key: 'rest', n: impactInFlight, label: t('card.seg.inflight') },
           { key: 'live', n: impactLive, label: t('card.seg.live') },
         ],
-        note: t('card.impact.note2', { a: impactNotStarted, b: impactInFlight, c: impactLive }),
+        note: highImpact.length
+          ? t('card.impact.note2', { a: impactNotStarted, b: impactInFlight, c: impactLive })
+          : t('card.impact.empty'),
         filters: { impact: 'High' },
       },
       {
@@ -308,7 +318,11 @@
           { key: 'live', n: live.length, label: t('card.seg.live') },
           { key: 'idle', n: total - live.length, label: '\u2014' },
         ],
-        note: avgDays === null ? t('card.live.note.none') : t('card.live.note', { n: avgDays }),
+        note: (() => {
+          const fake = live.filter((r) => r.progress < 100).length;
+          if (fake) return t('card.live.note.mismatch', { n: fake });
+          return avgDays === null ? t('card.live.note.none') : t('card.live.note', { n: avgDays });
+        })(),
         filters: { status: 'Live' },
       },
       {
@@ -352,6 +366,24 @@
         ],
         note: t('card.devfull.note', { n: fullLoad.filter((r) => r.progress > 0 && r.progress < 100).length }),
         filters: { load: 'full' },
+      },
+      {
+        label: t('card.mismatch'),
+        value: mismatched.length,
+        tone: mismatched.length ? 'alert' : 'good',
+        aux: t('card.share', { n: pct(mismatched.length, total) }),
+        segments: [
+          { key: 'risk', n: mismatched.length, label: t('consistency.bad') },
+          { key: 'idle', n: total - mismatched.length, label: '—' },
+        ],
+        note: mismatched.length
+          ? t('card.mismatch.note', {
+              top: Object.entries(
+                mismatched.reduce((a, r) => ((a[r.consistency ?? '—'] = (a[r.consistency ?? '—'] ?? 0) + 1), a), {}),
+              ).sort((a, b) => b[1] - a[1])[0][0],
+            })
+          : t('card.mismatch.none'),
+        filters: { consistency: 'bad' },
       },
       {
         label: t('card.attention'),
@@ -493,7 +525,7 @@
         <li>
           <button type="button" class="top-row" data-project="${escape(r.project)}">
             <span class="t-name">${escape(r.project)}${r.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}</span>
-            <span class="t-stage">${escape(r.currentStage ?? 'Contact')}</span>
+            <span class="t-stage">${escape(r.currentStage ?? t('stage.untracked'))}</span>
             <span class="t-pic">${escape(r.pic ?? '—')}</span>
             <span class="t-days ${daysClass(r)}">${escape(daysText(r))}</span>
           </button>
@@ -559,10 +591,12 @@
           <td class="dim">${row.impact ? escape(row.impact) : '\u2014'}</td>
           <td>
             <span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span>
-            <span class="a-load">${escape(t(`load.${row.devLoad}`))}</span>
+            <span class="a-load">${escape(
+              row.devOwner ? t('label.devowner', { who: row.devOwner }) : t(`load.${row.devLoad}`),
+            )}</span>
           </td>
           <td><span class="klass ${classOf(row)}">${escape(t(`class.${classOf(row)}`))}</span></td>
-          <td class="dim">${escape(row.currentStage ?? 'Contact')} <span class="a-pct">${row.progress}%</span></td>
+          <td class="dim">${escape(row.currentStage ?? t('stage.untracked'))} <span class="a-pct">${row.progress}%</span></td>
           <td class="a-next">
             ${escape(action.text)}
             ${action.caveat ? `<span class="a-caveat">${escape(action.caveat)}</span>` : ''}
@@ -672,9 +706,12 @@
     fill(
       'f-stage',
       t('filter.stage'),
-      STEPS.filter((s) => ROWS.some((r) => r.progress === s.weight)).map((s) => [String(s.weight), `${s.label} (${s.weight}%)`]),
+      [untracked(), ...STAGE_MODEL]
+        .filter((s) => ROWS.some((r) => r.progress === s.weight))
+        .map((s) => [String(s.weight), s.weight === 0 ? s.label : `${s.label} (${s.weight}%)`]),
     );
     fill('f-class', t('filter.class'), CLASSES.map((c) => [c, t(`class.${c}`)]));
+    fill('f-consistency', t('filter.consistency'), [['bad', t('consistency.bad')], ['ok', t('consistency.ok')]]);
     fill('f-health', t('filter.health'), [
       ['attention', t('health.attention')],
       ['norecord', t('health.norecord')],
@@ -696,6 +733,8 @@
       if (state.route && routeOf(row) !== state.route) return false;
       if (state.load && row.devLoad !== state.load) return false;
       if (state.klass && classOf(row) !== state.klass) return false;
+      if (state.consistency === 'bad' && row.consistent !== false) return false;
+      if (state.consistency === 'ok' && row.consistent === false) return false;
       if (state.stageAt !== '' && row.progress !== Number(state.stageAt)) return false;
       if (state.health) {
         if (state.health === 'attention') {
@@ -737,7 +776,7 @@
     const track = row.stages
       .map(
         (s) =>
-          `<span class="step ${s.date ? 'hit' : ''} ${s.date && s.n === 11 ? 'final' : ''}" title="${escape(s.label)} · ${
+          `<span class="step ${s.date ? 'hit' : ''} ${s.date && s.weight === 100 ? 'final' : ''}" title="${escape(s.label)} · ${
             s.date ? fmtDate(s.date) : escape(t('detail.notreached'))
           }">${s.n}</span>`,
       )
@@ -769,7 +808,7 @@
     const stages = row.stages
       .map(
         (s) => `
-        <div class="stagerow ${s.date ? 'hit' : 'miss'} ${s.date && s.n === 11 ? 'final' : ''}">
+        <div class="stagerow ${s.date ? 'hit' : 'miss'} ${s.date && s.weight === 100 ? 'final' : ''}">
           <span class="n">${String(s.n).padStart(2, '0')}</span>
           <span class="l">${escape(s.label)}</span>
           <span class="d">${s.date ? fmtDate(s.date) : '—'}</span>
@@ -780,6 +819,7 @@
     const notes = [
       row.currentStage ? t('detail.furthest', { stage: escape(row.currentStage) }) : t('detail.nostage'),
       row.delayNote ? t('detail.note', { note: escape(row.delayNote) }) : null,
+      row.consistent === false ? t('detail.consistency', { note: escape(row.consistency ?? '') }) : null,
       row.lastActivity ? t('detail.last', { date: fmtDate(row.lastActivity), n: row.days }) : t('detail.never'),
     ]
       .filter(Boolean)
@@ -824,8 +864,9 @@
     $('f-pic').value = state.pic;
     $('f-stage').value = state.stageAt;
     $('f-class').value = state.klass;
+    $('f-consistency').value = state.consistency;
     $('f-health').value = state.health;
-    for (const id of ['f-status', 'f-category', 'f-pic', 'f-stage', 'f-class', 'f-health']) {
+    for (const id of ['f-status', 'f-category', 'f-pic', 'f-stage', 'f-class', 'f-consistency', 'f-health']) {
       $(id).dataset.empty = $(id).value === '' ? 'true' : 'false';
     }
   }
@@ -883,6 +924,7 @@
     ['f-pic', 'pic'],
     ['f-stage', 'stageAt'],
     ['f-class', 'klass'],
+    ['f-consistency', 'consistency'],
     ['f-health', 'health'],
   ]) {
     $(id).addEventListener('change', (e) => {
@@ -915,7 +957,7 @@
 
   $('reset').addEventListener('click', () => {
     Object.assign(state, {
-      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '',
+      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '', consistency: '',
       sort: 'attention', dir: 'asc',
     });
     state.open.clear();
@@ -926,7 +968,7 @@
   $('export').addEventListener('click', () => {
     const header = [
       'No', 'Project', 'Category', 'Status', 'Progress %', 'Current stage', 'Biz impact',
-      'PIC', 'Team', 'Dev load', 'Build route', 'Class', 'Switching', 'Last activity', 'Days since', 'Health',
+      'PIC', 'Team', 'Dev load', 'Build route', 'Class', 'Switching', 'Last activity', 'Days since', 'Health', 'Consistency',
     ];
     const cell = (value) => {
       const text = String(value ?? '');
@@ -935,7 +977,7 @@
     const lines = visibleRows().map((r) =>
       [r.no, r.project, r.category, r.status, r.progress, r.currentStage ?? '', r.impact ?? '',
        r.pic ?? '', r.team ?? '', r.devLoadLabel, routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '', r.lastActivity ?? '',
-       r.days ?? '', r.health].map(cell).join(','),
+       r.days ?? '', r.health, r.consistency ?? ''].map(cell).join(','),
     );
     // BOM so Excel opens the UTF-8 partner names correctly.
     const blob = new Blob(['﻿' + [header.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });

@@ -36,45 +36,53 @@ GitHub Actions가 변환하고 배포합니다. **Node.js 설치 필요 없습�
 
 ## 주간 갱신 (로컬 실행)
 
-이 보드는 **PC에서 실행하는 방식**입니다. 클라우드 무인 실행은 쓰지 않습니다 —
-SharePoint 인증이 사용자 위임(Device Code) 방식이라 무인 환경에서는 못 돌기 때문입니다.
-
-### 이미 받아둔 파일이 있을 때 (권장)
-
-다른 스크립트가 SharePoint에서 워크북을 이미 내려받았다면, 그 경로만 넘기면 됩니다.
-여기서 별도로 Graph 인증을 하지 않습니다.
-
-```bash
-npm run weekly -- --source "C:/path/to/CRM_Dev.xlsx"
-```
-
-복사 → 변환 → 행 수 검증 → 변경이 있을 때만 커밋·푸시까지 한 번에 처리합니다.
-변경이 없으면 커밋하지 않고 그냥 끝납니다.
-
-기존 주간 파이프라인(`run-weekly.js` 등)에 한 줄로 붙일 수 있습니다:
-
-```js
-execSync('npm run weekly -- --source "3. CRM/CRM_Dev.xlsx"', {
-  cwd: 'C:/Users/LENOVO/Desktop/AI Dev Tracker/board',
-  stdio: 'inherit',
-});
-```
-
-### 파일을 직접 교체했을 때
+원본은 **`Desktop/REPORT/3. CRM/`** 에 매주 토요일 자동으로 내려오는 Dev Schedule 워크북입니다.
+그 폴더를 채우는 건 기존 파이프라인(Device Code 위임 인증)이고, 이 보드는 **받아둔 파일을 읽기만** 합니다.
+여기서 SharePoint 인증을 따로 하지 않습니다.
 
 ```bash
 npm run weekly
 ```
 
-`data/Dev_Schedule.xlsx` 를 이미 최신으로 바꿔둔 상태에서 변환·배포만 합니다.
-`update.bat` 더블클릭은 변환 후 화면을 열어주기만 하고 푸시는 하지 않습니다.
+`3. CRM/` 에서 최신 워크북을 알아서 찾습니다 (`_latest_` 접두 파일 우선, 없으면 수정시각 최신).
+복사 → 변환 → 검증 → 변경이 있을 때만 커밋·푸시까지 한 번에 끝납니다.
+
+경로를 직접 주려면:
+
+```bash
+npm run weekly -- --source "C:/path/to/Dev_Schedule.xlsx"
+```
+
+기존 주간 파이프라인(`run-weekly.js` 등)에 한 줄로 붙일 수 있습니다:
+
+```js
+execSync('npm run weekly', {
+  cwd: 'C:/Users/LENOVO/Desktop/AI Dev Tracker/board',
+  stdio: 'inherit',
+});
+```
+
+### 읽는 시트
+
+| | |
+|---|---|
+| 시트명 | `Dev Tracker (IT)` (없으면 옛 이름 `Dev Tracker` 로 폴백) |
+| 헤더 | 3행 |
+| 마일스톤 | 12단계 — ① 미팅/1st Contact (10%) ~ ⑫ API Live 완료 (100%) |
+
+컬럼은 **이름으로** 찾습니다. 순서가 바뀌어도 동작하고, 이름이 바뀌면
+[`scripts/build.mjs`](scripts/build.mjs) 상단 `COLUMNS` 목록만 고치면 됩니다.
+
+시트가 이미 계산해 둔 값(`현재 단계`, `다음 게이트`, `개발 주체`, `연동 방향`, `Status vs 날짜 정합성`)은
+그대로 읽어 씁니다. **다시 계산하는 건 경과일 하나뿐입니다** — 시트의 `경과일` 은 저장하는 순간부터 낡기 때문입니다.
 
 ### 안전장치
 
 - 1KB 미만이거나 zip이 아닌 파일(로그인 페이지 등)은 덮어쓰지 않고 중단
 - 파싱 결과가 0행이면 **커밋 전에** 중단
 - 변경 없으면 빈 커밋을 만들지 않음
-- `--no-push` 로 커밋·푸시 없이 결과만 확인 가능
+- `--no-push` 로 커밋·푸시 없이 결과만 확인
+- Biz Impact 미기재, Status 불일치 건수를 빌드 로그에 경고로 출력
 
 ---
 
