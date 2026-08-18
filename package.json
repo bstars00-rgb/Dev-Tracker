@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "preview": "node scripts/serve.mjs",
-    "fetch:sharepoint": "node scripts/fetch-sharepoint.mjs"
+    "weekly": "node scripts/weekly-local.mjs"
   },
   "devDependencies": {
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"

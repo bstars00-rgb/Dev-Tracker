@@ -34,52 +34,47 @@ GitHub Actions가 변환하고 배포합니다. **Node.js 설치 필요 없습�
 
 ---
 
-## SharePoint 자동 갱신 (매주 토요일 오전 9시)
+## 주간 갱신 (로컬 실행)
 
-설정해 두면 **아무도 아무것도 안 해도** 매주 토요일 아침에 SharePoint의 엑셀을 그대로 가져와
-보드를 갱신하고 배포합니다. 사람 PC가 켜져 있을 필요도 없습니다.
+이 보드는 **PC에서 실행하는 방식**입니다. 클라우드 무인 실행은 쓰지 않습니다 —
+SharePoint 인증이 사용자 위임(Device Code) 방식이라 무인 환경에서는 못 돌기 때문입니다.
 
-동작 순서: SharePoint에서 워크북 다운로드 → 변환 → 행 수 검증 → **바뀐 게 있을 때만** 커밋 → Pages 배포.
-바뀐 게 없으면 조용히 끝납니다.
+### 이미 받아둔 파일이 있을 때 (권장)
 
-### 한 번만 해두면 되는 설정
+다른 스크립트가 SharePoint에서 워크북을 이미 내려받았다면, 그 경로만 넘기면 됩니다.
+여기서 별도로 Graph 인증을 하지 않습니다.
 
-**1. Azure AD 앱 등록** (IT/관리자 권한 필요)
+```bash
+npm run weekly -- --source "C:/path/to/CRM_Dev.xlsx"
+```
 
-Azure Portal → Microsoft Entra ID → 앱 등록 → 새 등록
+복사 → 변환 → 행 수 검증 → 변경이 있을 때만 커밋·푸시까지 한 번에 처리합니다.
+변경이 없으면 커밋하지 않고 그냥 끝납니다.
 
-- API 사용 권한 → Microsoft Graph → **응용 프로그램 권한** → `Files.Read.All` → **관리자 동의 부여**
-- 인증서 및 암호 → 새 클라이언트 암호 발급
+기존 주간 파이프라인(`run-weekly.js` 등)에 한 줄로 붙일 수 있습니다:
 
-> 사용자 위임이 아니라 **응용 프로그램 권한**이어야 합니다. 사람 로그인 없이 도는 작업이라서요.
-> 읽기 전용이라 SharePoint 원본을 건드리지 않습니다.
+```js
+execSync('npm run weekly -- --source "3. CRM/CRM_Dev.xlsx"', {
+  cwd: 'C:/Users/LENOVO/Desktop/AI Dev Tracker/board',
+  stdio: 'inherit',
+});
+```
 
-**2. GitHub 저장소에 시크릿 등록**
+### 파일을 직접 교체했을 때
 
-Settings → Secrets and variables → Actions → New repository secret
+```bash
+npm run weekly
+```
 
-| 이름 | 값 |
-|---|---|
-| `SP_TENANT_ID` | 디렉터리(테넌트) ID |
-| `SP_CLIENT_ID` | 애플리케이션(클라이언트) ID |
-| `SP_CLIENT_SECRET` | 클라이언트 암호 값 |
-| `SP_SHARE_URL` | 엑셀 공유 링크 전체 URL |
+`data/Dev_Schedule.xlsx` 를 이미 최신으로 바꿔둔 상태에서 변환·배포만 합니다.
+`update.bat` 더블클릭은 변환 후 화면을 열어주기만 하고 푸시는 하지 않습니다.
 
-**3. 즉시 테스트**
+### 안전장치
 
-Actions 탭 → `Weekly update from SharePoint` → **Run workflow**.
-토요일까지 기다릴 필요 없이 바로 돌려볼 수 있습니다. 실행 요약에 행 수와 상태 분포가 찍힙니다.
-
-### 시간 변경
-
-[`.github/workflows/weekly-update.yml`](.github/workflows/weekly-update.yml)의 `cron: '0 0 * * 6'`.
-UTC 기준이라 `0 0 * * 6` = 토요일 09:00 KST입니다. 평일 매일 아침이면 `0 0 * * 1-5`.
-
-### Azure 앱 등록이 어려우면
-
-승인 절차가 오래 걸리면, 그때까지는 기존 방식이 그대로 동작합니다 —
-`data/Dev_Schedule.xlsx` 교체 후 푸시. OneDrive 동기화 폴더를 쓴다면 Windows 작업 스케줄러로
-토요일에 파일 복사 + 푸시만 걸어도 같은 결과가 됩니다.
+- 1KB 미만이거나 zip이 아닌 파일(로그인 페이지 등)은 덮어쓰지 않고 중단
+- 파싱 결과가 0행이면 **커밋 전에** 중단
+- 변경 없으면 빈 커밋을 만들지 않음
+- `--no-push` 로 커밋·푸시 없이 결과만 확인 가능
 
 ---
 
