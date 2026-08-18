@@ -373,7 +373,7 @@ tbody tr.row.open { background: color-mix(in srgb, var(--accent) 9%, transparent
 td.num { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
 
 .partner { font-weight: 600; }
-.partner .flag {
+.flag {
   margin-left: 6px;
   font: 650 9px/1 var(--mono);
   letter-spacing: 0.04em;
@@ -569,3 +569,30 @@ kbd {
 .owner.partner { color: var(--contact); background: var(--contact-bg); }
 
 .panel-foot { margin: 0; padding: 8px 13px 10px; font-size: 11px; color: var(--faint); }
+
+/* ---------------------------------------------------------------- watch level */
+.actions-summary {
+  margin: 0;
+  padding: 8px 13px 0;
+  font: 11.5px/1.4 inherit;
+  color: var(--muted);
+}
+
+.a-watch { white-space: nowrap; }
+
+.watch {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+/* Solid = engineering owes something. Outlined = eyes on it. Flat = not ours yet. */
+.watch.act { color: #fff; background: var(--danger); }
+.watch.verify { color: #fff; background: var(--warn); }
+.watch.standby { color: var(--dev); background: var(--dev-bg); box-shadow: inset 0 0 0 1px currentColor; }
+.watch.heads { color: var(--test); background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
+.watch.sales { color: var(--faint); background: var(--contact-bg); }
+
+.a-lead { display: block; margin-top: 3px; font-size: 10.5px; color: var(--faint); }

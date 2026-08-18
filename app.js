@@ -174,6 +174,34 @@
   const routeLabel = (row) =>
     row.switching ? t('route.switching', { sw: row.switching }) : t(`route.${routeOf(row)}`);
 
+  /**
+   * How closely OHMY engineering needs to be watching this one, right now.
+   *
+   * Sales is monitoring every row by definition, so naming an "owner" told a developer
+   * nothing. This says what the developer actually wants to know: is this on me, do I
+   * have to review someone else's work, am I on call, or is it not mine yet.
+   */
+  function watchLevel(row) {
+    const route = routeOf(row);
+
+    // Stages where OHMY engineering itself owes a deliverable: DEV key, live key,
+    // launch monitoring. True whoever writes the client code.
+    if ([40, 45, 70, 75, 80, 90].includes(row.progress)) return 'act';
+
+    // The build itself follows the route.
+    if (row.progress === 50 || row.progress === 60) {
+      if (route === 'direct') return 'act';
+      return route === 'switching' ? 'verify' : 'standby';
+    }
+
+    // Still commercial. Flag the ones that will land hard on engineering later, so the
+    // dev team is not surprised by a full-effort high-impact partner at kickoff.
+    if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
+    return 'sales';
+  }
+
+  const WATCH_ORDER = { act: 0, verify: 1, standby: 2, heads: 3, sales: 4 };
+
   /* ================================================================ cards */
   function renderCards() {
     const total = ROWS.length;
@@ -470,12 +498,12 @@
     const rows = candidates
       .map((row) => ({ row, action: nextAction(row) }))
       .filter(({ action }) => action !== null)
-      .filter(({ action }) => actionsScope === 'all' || action.owner === 'dev' || action.owner === 'switching')
+      .filter(({ row }) => actionsScope === 'all' || ['act', 'verify'].includes(watchLevel(row)))
       .sort((a, b) => {
         const impact = (r) => (r.impact === 'High' ? 0 : r.impact === 'Mid' ? 1 : 2);
-        const dev = (x) => (x.action.owner === 'dev' ? 0 : 1);
+        // Engineering first, and inside that the biggest commercial upside first.
         return (
-          dev(a) - dev(b) ||
+          WATCH_ORDER[watchLevel(a.row)] - WATCH_ORDER[watchLevel(b.row)] ||
           impact(a.row) - impact(b.row) ||
           b.row.progress - a.row.progress ||
           (b.row.days ?? 0) - (a.row.days ?? 0)
@@ -484,7 +512,7 @@
 
     $('actions-scope').innerHTML = [
       ['all', t('panel.actions.all')],
-      ['dev', t('panel.actions.only')],
+      ['dev', t('panel.actions.dev')],
     ]
       .map(
         ([key, label]) =>
@@ -492,12 +520,20 @@
       )
       .join('');
 
+    const tally = (level) => candidates.filter((r) => watchLevel(r) === level).length;
+    $('actions-summary').textContent = t('watch.summary', {
+      act: tally('act'),
+      verify: tally('verify'),
+      standby: tally('standby'),
+      heads: tally('heads'),
+    });
+
     $('actions-body').innerHTML = rows.length
       ? rows
           .map(
             ({ row, action }) => `
         <tr data-project="${escape(row.project)}">
-          <td class="a-name">${escape(row.project)}${row.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}</td>
+          <td class="a-name">${escape(row.project)}</td>
           <td class="dim">${row.impact ? escape(row.impact) : '\u2014'}</td>
           <td class="dim">${escape(row.currentStage ?? 'Contact')} <span class="a-pct">${row.progress}%</span></td>
           <td><span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span></td>
@@ -506,7 +542,12 @@
             ${action.caveat ? `<span class="a-caveat">${escape(action.caveat)}</span>` : ''}
             ${action.gate ? `<span class="a-gate">${escape(action.gate)}</span>` : ''}
           </td>
-          <td><span class="owner ${action.owner}">${escape(t(`owner.${action.owner}`))}</span></td>
+          <td class="a-watch">
+            <span class="watch ${watchLevel(row)}" title="${escape(t(`watch.${watchLevel(row)}.why`))}">${escape(
+              t(`watch.${watchLevel(row)}`),
+            )}</span>
+            ${action.owner === 'dev' ? '' : `<span class="a-lead">${escape(t('watch.lead', { who: t(`owner.${action.owner}`) }))}</span>`}
+          </td>
           <td class="num"><span class="days ${daysClass(row)}">${escape(daysText(row))}</span></td>
         </tr>`,
           )
