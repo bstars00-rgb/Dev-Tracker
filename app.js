@@ -76,6 +76,8 @@
     stageAt: '',
     health: '',
     impact: '',
+    route: '',
+    load: '',
     sort: 'attention',
     dir: 'asc',
     open: new Set(),
@@ -100,7 +102,7 @@
 
   /** Jump from any dashboard element into the list with a filter already applied. */
   function drillTo(filters) {
-    Object.assign(state, { q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '' }, filters);
+    Object.assign(state, { q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '' }, filters);
     syncControls();
     renderList();
     showTab('list');
@@ -122,6 +124,55 @@
   }
 
   const quietest = (rows) => rows.filter((r) => r.days !== null).sort((a, b) => b.days - a.days)[0] ?? null;
+
+  /* ================================================================ what to do next */
+  /**
+   * Who actually writes the integration code.
+   *  - a switching platform is named -> the connector is configured there
+   *  - OHMY dev load is full or half -> we build it
+   *  - otherwise                     -> the partner builds against our API
+   * "OHMY Dev Load" in the sheet measures OUR effort, which is what makes this readable.
+   */
+  function routeOf(row) {
+    if (row.switching) return 'switching';
+    if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
+    return 'partner';
+  }
+
+  /**
+   * Next step per stage, taken from the internal 9-phase API integration process.
+   *
+   * Credential work (DEV key at 40/45, live key at 70/75) and go-live monitoring are
+   * always OHMY engineering whoever writes the client code — only the build itself
+   * (50/60) follows the route. That is why a high-impact partner needing almost no OHMY
+   * effort still lands on engineering at the key-issuing stages.
+   */
+  const STAGE_OWNER = {
+    0: 'gsm', 20: 'gsm', 30: 'sla',
+    40: 'dev', 45: 'dev',
+    50: null, 60: null, // decided by the build route
+    70: 'dev', 75: 'dev', 80: 'dev', 90: 'dev',
+  };
+
+  function nextAction(row) {
+    if (row.progress >= 100) return null;
+
+    const route = routeOf(row);
+    const owner =
+      STAGE_OWNER[row.progress] ?? (route === 'direct' ? 'dev' : route === 'switching' ? 'switching' : 'partner');
+
+    return {
+      owner,
+      route,
+      text: t(`act.p${row.progress}`),
+      caveat: row.progress >= 50 && route !== 'direct' ? t(`act.route.${route}`, { sw: row.switching ?? '' }) : null,
+      // The one hard gate in the process: no live key without both conditions.
+      gate: row.progress === 60 || row.progress === 70 ? t('act.gate') : null,
+    };
+  }
+
+  const routeLabel = (row) =>
+    row.switching ? t('route.switching', { sw: row.switching }) : t(`route.${routeOf(row)}`);
 
   /* ================================================================ cards */
   function renderCards() {
@@ -145,8 +196,35 @@
     const norecordNoPic = norecord.filter((r) => !r.pic).length;
     const impactAtRisk = highImpact.filter(needsAttention).length;
 
-    // Each card carries four things: the number, its share of the portfolio, a
-    // composition bar, and one sentence that says what the number alone does not.
+    const devQueue = ROWS.filter((r) => r.progress >= 40 && r.progress < 50);
+    const devWip = ROWS.filter((r) => r.progress >= 50 && r.progress < 80);
+    const switching = ROWS.filter((r) => r.switching);
+    const fullLoad = ROWS.filter((r) => r.devLoad === 'full');
+
+    const routeNote = (rows) =>
+      t('card.route.note', {
+        d: rows.filter((r) => routeOf(r) === 'direct').length,
+        p: rows.filter((r) => routeOf(r) === 'partner').length,
+        s: rows.filter((r) => routeOf(r) === 'switching').length,
+      });
+
+    const routeSegments = (rows, rest) => [
+      { key: 'rest', n: rows.filter((r) => routeOf(r) === 'direct').length, label: t('route.direct') },
+      { key: 'ok', n: rows.filter((r) => routeOf(r) === 'partner').length, label: t('route.partner') },
+      { key: 'watch', n: rows.filter((r) => routeOf(r) === 'switching').length, label: t('owner.switching') },
+      { key: 'idle', n: rest, label: '\u2014' },
+    ];
+
+    const impactNotStarted = highImpact.filter((r) => r.progress === 0).length;
+    const impactInFlight = highImpact.filter((r) => r.progress > 0 && r.progress < 100).length;
+    const impactLive = highImpact.filter((r) => r.progress >= 100).length;
+
+    const switchList = [...new Set(switching.map((r) => r.switching))]
+      .map((sw) => `${sw} ${switching.filter((r) => r.switching === sw).length}`)
+      .join(' \u00b7 ');
+
+    // Nine cards: three that frame the portfolio, four that answer "is this ours to build
+    // and when", two that flag neglect. Every one is a link into the filtered list.
     const CARDS = [
       {
         label: t('card.total'),
@@ -160,40 +238,71 @@
         filters: {},
       },
       {
+        label: t('card.impact'),
+        value: highImpact.length,
+        tone: 'impact',
+        aux: t('card.impact.hint'),
+        segments: [
+          { key: 'idle2', n: impactNotStarted, label: t('card.seg.contact') },
+          { key: 'rest', n: impactInFlight, label: t('card.seg.inflight') },
+          { key: 'live', n: impactLive, label: t('card.seg.live') },
+        ],
+        note: t('card.impact.note2', { a: impactNotStarted, b: impactInFlight, c: impactLive }),
+        filters: { impact: 'High' },
+      },
+      {
         label: t('card.live'),
         value: live.length,
         tone: 'good',
         aux: t('card.share', { n: pct(live.length, total) }),
         segments: [
           { key: 'live', n: live.length, label: t('card.seg.live') },
-          { key: 'idle', n: total - live.length, label: '—' },
+          { key: 'idle', n: total - live.length, label: '\u2014' },
         ],
         note: avgDays === null ? t('card.live.note.none') : t('card.live.note', { n: avgDays }),
         filters: { status: 'Live' },
       },
       {
-        label: t('card.inflight'),
-        value: inFlight.length,
+        label: t('card.devqueue'),
+        value: devQueue.length,
         tone: 'info',
-        aux: t('card.share', { n: pct(inFlight.length, total) }),
-        segments: [
-          { key: 'risk', n: inFlight.filter(needsAttention).length, label: t('card.seg.risk') },
-          { key: 'ok', n: inFlight.filter((r) => !needsAttention(r)).length, label: t('card.seg.ok') },
-          { key: 'idle', n: total - inFlight.length, label: '—' },
-        ],
-        note: furthest ? t('card.inflight.note', { stage: furthest.currentStage ?? '—' }) : t('card.inflight.note.none'),
-        filters: { health: 'attention' },
+        segments: routeSegments(devQueue, total - devQueue.length),
+        note: devQueue.length ? routeNote(devQueue) : t('card.devqueue.note.none'),
+        filters: { stageAt: '40' },
       },
       {
-        label: t('card.contact'),
-        value: contact.length,
-        aux: t('card.share', { n: pct(contact.length, total) }),
+        label: t('card.devwip'),
+        value: devWip.length,
+        tone: 'info',
+        segments: routeSegments(devWip, total - devWip.length),
+        note: devWip.length ? routeNote(devWip) : t('card.devwip.note.none'),
+        filters: { stageAt: '50' },
+      },
+      {
+        label: t('card.switching'),
+        value: switching.length,
+        tone: 'info',
+        aux: t('card.share', { n: pct(switching.length, total) }),
         segments: [
-          { key: 'idle', n: contact.length, label: t('card.seg.contact') },
-          { key: 'rest', n: total - contact.length, label: '—' },
+          { key: 'watch', n: switching.length, label: t('owner.switching') },
+          { key: 'idle', n: total - switching.length, label: '\u2014' },
         ],
-        note: t('card.contact.note', { n: pct(contact.length, total) }),
-        filters: { status: 'Contact' },
+        note: switching.length ? t('card.switching.note', { list: switchList }) : t('card.switching.note.none'),
+        filters: { route: 'switching' },
+      },
+      {
+        label: t('card.devfull'),
+        value: fullLoad.length,
+        tone: 'info',
+        aux: t('card.share', { n: pct(fullLoad.length, total) }),
+        segments: [
+          { key: 'rest', n: fullLoad.filter((r) => r.progress > 0 && r.progress < 100).length, label: t('card.seg.inflight') },
+          { key: 'live', n: fullLoad.filter((r) => r.progress >= 100).length, label: t('card.seg.live') },
+          { key: 'idle2', n: fullLoad.filter((r) => r.progress === 0).length, label: t('card.seg.contact') },
+          { key: 'idle', n: total - fullLoad.length, label: '\u2014' },
+        ],
+        note: t('card.devfull.note', { n: fullLoad.filter((r) => r.progress > 0 && r.progress < 100).length }),
+        filters: { load: 'full' },
       },
       {
         label: t('card.attention'),
@@ -218,38 +327,12 @@
         aux: t('card.share', { n: pct(stalled90.length, total) }),
         segments: [
           { key: 'd90', n: stalled90.length, label: t('card.seg.d90') },
-          { key: 'idle', n: total - stalled90.length, label: '—' },
+          { key: 'idle', n: total - stalled90.length, label: '\u2014' },
         ],
         note: worstStalled
           ? t('card.stalled90.note', { name: worstStalled.project, n: worstStalled.days })
           : t('card.stalled90.note.none'),
         filters: { health: 'stalled90' },
-      },
-      {
-        label: t('card.norecord'),
-        value: norecord.length,
-        tone: 'alert',
-        aux: t('card.share', { n: pct(norecord.length, total) }),
-        segments: [
-          { key: 'never', n: norecord.length, label: t('card.seg.never') },
-          { key: 'idle', n: total - norecord.length, label: '—' },
-        ],
-        note: norecordNoPic ? t('card.norecord.note', { n: norecordNoPic }) : t('card.norecord.note.all'),
-        filters: { health: 'norecord' },
-      },
-      {
-        label: t('card.impact'),
-        value: highImpact.length,
-        tone: impactAtRisk ? 'alert' : 'good',
-        aux: t('card.share', { n: pct(highImpact.length, total) }),
-        segments: [
-          { key: 'risk', n: impactAtRisk, label: t('card.seg.risk') },
-          { key: 'live', n: highImpact.filter((r) => r.status === 'Live').length, label: t('card.seg.live') },
-          { key: 'ok', n: highImpact.filter((r) => !needsAttention(r) && r.status !== 'Live').length, label: t('card.seg.ok') },
-          { key: 'idle', n: total - highImpact.length, label: '—' },
-        ],
-        note: impactAtRisk ? t('card.impact.note', { n: impactAtRisk }) : t('card.impact.note.none'),
-        filters: { impact: 'High' },
       },
     ];
 
@@ -376,8 +459,76 @@
     };
   }
 
+  let actionsScope = 'all';
+
+  /** The table that answers "what does engineering do about this one, today". */
+  function renderActions() {
+    const candidates = ROWS.filter(
+      (r) => (r.progress > 0 && r.progress < 100) || (r.impact === 'High' && r.progress === 0),
+    );
+
+    const rows = candidates
+      .map((row) => ({ row, action: nextAction(row) }))
+      .filter(({ action }) => action !== null)
+      .filter(({ action }) => actionsScope === 'all' || action.owner === 'dev' || action.owner === 'switching')
+      .sort((a, b) => {
+        const impact = (r) => (r.impact === 'High' ? 0 : r.impact === 'Mid' ? 1 : 2);
+        const dev = (x) => (x.action.owner === 'dev' ? 0 : 1);
+        return (
+          dev(a) - dev(b) ||
+          impact(a.row) - impact(b.row) ||
+          b.row.progress - a.row.progress ||
+          (b.row.days ?? 0) - (a.row.days ?? 0)
+        );
+      });
+
+    $('actions-scope').innerHTML = [
+      ['all', t('panel.actions.all')],
+      ['dev', t('panel.actions.only')],
+    ]
+      .map(
+        ([key, label]) =>
+          `<button type="button" data-scope="${key}" aria-pressed="${actionsScope === key}">${escape(label)}</button>`,
+      )
+      .join('');
+
+    $('actions-body').innerHTML = rows.length
+      ? rows
+          .map(
+            ({ row, action }) => `
+        <tr data-project="${escape(row.project)}">
+          <td class="a-name">${escape(row.project)}${row.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}</td>
+          <td class="dim">${row.impact ? escape(row.impact) : '\u2014'}</td>
+          <td class="dim">${escape(row.currentStage ?? 'Contact')} <span class="a-pct">${row.progress}%</span></td>
+          <td><span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span></td>
+          <td class="a-next">
+            ${escape(action.text)}
+            ${action.caveat ? `<span class="a-caveat">${escape(action.caveat)}</span>` : ''}
+            ${action.gate ? `<span class="a-gate">${escape(action.gate)}</span>` : ''}
+          </td>
+          <td><span class="owner ${action.owner}">${escape(t(`owner.${action.owner}`))}</span></td>
+          <td class="num"><span class="days ${daysClass(row)}">${escape(daysText(row))}</span></td>
+        </tr>`,
+          )
+          .join('')
+      : `<tr><td colspan="7" class="empty">${escape(t('panel.actions.empty'))}</td></tr>`;
+
+    $('actions-scope').onclick = (event) => {
+      const button = event.target.closest('[data-scope]');
+      if (!button) return;
+      actionsScope = button.dataset.scope;
+      renderActions();
+    };
+
+    $('actions-body').onclick = (event) => {
+      const tr = event.target.closest('tr[data-project]');
+      if (tr) drillTo({ q: tr.dataset.project });
+    };
+  }
+
   function renderDashboard() {
     renderCards();
+    renderActions();
     renderBreakdown('by-pic', 'pic', (value) => ({ pic: value }), t('label.nopic'));
     renderBreakdown('by-category', 'category', (value) => ({ category: value }), t('label.uncategorised'));
     renderAging();
@@ -424,6 +575,8 @@
       if (state.category && row.category !== state.category) return false;
       if (state.pic && row.pic !== state.pic) return false;
       if (state.impact && row.impact !== state.impact) return false;
+      if (state.route && routeOf(row) !== state.route) return false;
+      if (state.load && row.devLoad !== state.load) return false;
       if (state.stageAt !== '' && row.progress !== Number(state.stageAt)) return false;
       if (state.health) {
         if (state.health === 'attention') {
@@ -641,7 +794,8 @@
 
   $('reset').addEventListener('click', () => {
     Object.assign(state, {
-      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', sort: 'attention', dir: 'asc',
+      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '',
+      sort: 'attention', dir: 'asc',
     });
     state.open.clear();
     syncControls();

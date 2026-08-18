@@ -31,6 +31,33 @@
       <section id="view-dashboard" role="tabpanel" aria-label="Dashboard">
         <div class="kpis" id="kpis"></div>
 
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 data-i18n="panel.actions.title"></h2>
+              <p data-i18n="panel.actions.desc"></p>
+            </div>
+            <div class="scope" id="actions-scope"></div>
+          </div>
+          <div class="actions-wrap">
+            <table class="actions">
+              <thead>
+                <tr>
+                  <th scope="col" data-i18n="th.act.partner"></th>
+                  <th scope="col" data-i18n="th.act.impact"></th>
+                  <th scope="col" data-i18n="th.act.stage"></th>
+                  <th scope="col" data-i18n="th.act.route"></th>
+                  <th scope="col" data-i18n="th.act.next"></th>
+                  <th scope="col" data-i18n="th.act.owner"></th>
+                  <th scope="col" class="num" data-i18n="th.act.days"></th>
+                </tr>
+              </thead>
+              <tbody id="actions-body"></tbody>
+            </table>
+          </div>
+          <p class="panel-foot" data-i18n="phase.ref"></p>
+        </section>
+
         <div class="grid-2">
           <section class="panel">
             <div class="panel-head">
