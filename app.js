@@ -13,8 +13,9 @@
   }
 
   const ROWS = data.rows;
+  const STAGE_MODEL = data.stageModel ?? [];
 
-  /* ---------------------------------------------------------------- helpers */
+  /* ================================================================ helpers */
   const STATUS_CLASS = {
     Live: 'live',
     'In Development': 'dev',
@@ -22,6 +23,9 @@
     'NDA/Contract': 'nda',
     Contact: 'contact',
   };
+
+  const escape = (value) =>
+    String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
   const fmtDate = (iso) => {
     if (!iso) return '—';
@@ -42,69 +46,235 @@
 
   const daysText = (row) => (row.days === null ? 'never' : `${row.days}d`);
 
-  const escape = (value) =>
-    String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-
   const NEEDS_ATTENTION = new Set(['norecord', 'stalled90', 'stalled30', 'watch']);
+  const needsAttention = (row) => NEEDS_ATTENTION.has(row.health);
+  const pct = (n, total) => (total ? Math.round((n / total) * 100) : 0);
 
-  /* ---------------------------------------------------------------- state */
+  /* ================================================================ state */
   const state = {
+    tab: 'dashboard',
     q: '',
     status: '',
     category: '',
     pic: '',
     health: '',
+    stageAt: '', // weight of the stage a project is currently parked on
     sort: 'attention',
     dir: 'asc',
     open: new Set(),
   };
 
-  /* ---------------------------------------------------------------- header */
-  const counts = data.counts ?? {};
+  /* ================================================================ header */
   const generated = new Date(data.generatedAt);
   $('meta').innerHTML =
     `<b>${ROWS.length}</b> projects · built ${escape(
       generated.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
     )} · source <b>${escape(data.sourceFile)}</b> / ${escape(data.sourceSheet)}`;
 
-  /* ---------------------------------------------------------------- tiles */
-  const byStatus = counts.byStatus ?? {};
-  const byHealth = counts.byHealth ?? {};
-  const attention = ROWS.filter((r) => NEEDS_ATTENTION.has(r.health)).length;
+  /* ================================================================ tabs */
+  function showTab(tab) {
+    state.tab = tab;
+    $('view-dashboard').hidden = tab !== 'dashboard';
+    $('view-list').hidden = tab !== 'list';
+    for (const button of $('tabs').children) {
+      button.setAttribute('aria-selected', button.dataset.tab === tab ? 'true' : 'false');
+    }
+    if (location.hash.slice(1) !== tab) history.replaceState(null, '', `#${tab}`);
+    window.scrollTo({ top: 0 });
+  }
 
-  const TILES = [
-    { key: 'all', label: 'All projects', value: ROWS.length, filter: {} },
-    { key: 'live', label: 'Live', value: byStatus.Live ?? 0, filter: { status: 'Live' }, tone: 'good' },
-    { key: 'dev', label: 'In development', value: byStatus['In Development'] ?? 0, filter: { status: 'In Development' } },
-    { key: 'nda', label: 'NDA / contract', value: byStatus['NDA/Contract'] ?? 0, filter: { status: 'NDA/Contract' } },
-    { key: 'contact', label: 'Contact', value: byStatus.Contact ?? 0, filter: { status: 'Contact' } },
-    { key: 'attention', label: 'Needs attention', value: attention, filter: { health: 'attention' }, tone: 'alert' },
-    { key: 'stalled90', label: 'Stalled 90d+', value: byHealth.stalled90 ?? 0, filter: { health: 'stalled90' }, tone: 'alert' },
-    { key: 'norecord', label: 'No activity record', value: byHealth.norecord ?? 0, filter: { health: 'norecord' }, tone: 'alert' },
-  ];
-
-  $('tiles').innerHTML = TILES.map(
-    (t) =>
-      `<button type="button" class="tile ${t.tone ?? ''}" data-tile="${t.key}" aria-pressed="false">
-         <span class="k">${escape(t.label)}</span><span class="v">${t.value}</span>
-       </button>`,
-  ).join('');
-
-  $('tiles').addEventListener('click', (event) => {
-    const button = event.target.closest('[data-tile]');
-    if (!button) return;
-    const tile = TILES.find((t) => t.key === button.dataset.tile);
-    if (!tile) return;
-    const already = button.getAttribute('aria-pressed') === 'true';
-    state.status = '';
-    state.health = '';
-    if (!already) Object.assign(state, tile.filter);
-    syncControls();
-    render();
+  $('tabs').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-tab]');
+    if (button) showTab(button.dataset.tab);
   });
 
-  /* ---------------------------------------------------------------- filter options */
-  const options = (id, values, label) => {
+  /** Jump from any dashboard element into the list with a filter already applied. */
+  function drillTo(filters) {
+    Object.assign(state, { q: '', status: '', category: '', pic: '', health: '', stageAt: '' }, filters);
+    syncControls();
+    renderList();
+    showTab('list');
+  }
+
+  /* ================================================================ dashboard */
+  function renderDashboard() {
+    const total = ROWS.length;
+    const live = ROWS.filter((r) => r.status === 'Live').length;
+    const contact = ROWS.filter((r) => r.progress === 0).length;
+    const inFlight = total - live - contact;
+    const attention = ROWS.filter(needsAttention).length;
+    const stalled90 = ROWS.filter((r) => r.health === 'stalled90').length;
+    const norecord = ROWS.filter((r) => r.health === 'norecord').length;
+
+    /* ---- KPI cards ------------------------------------------------ */
+    const KPIS = [
+      { label: 'Total', value: total, sub: `${data.sourceSheet} 시트 전체`, filters: {} },
+      { label: 'Live', value: live, sub: `전체의 ${pct(live, total)}% 완료`, tone: 'good', filters: { status: 'Live' } },
+      { label: 'In flight', value: inFlight, sub: 'NDA ~ Live Open 사이', tone: 'info', filters: { health: '', status: '' }, custom: 'inflight' },
+      { label: 'First contact', value: contact, sub: '아직 NDA 전', filters: { status: 'Contact' } },
+      { label: 'Needs attention', value: attention, sub: attention === total - live ? `미완료 ${attention}건 전부` : `미완료 ${total - live}건 중 ${attention}건`, tone: 'alert', filters: { health: 'attention' } },
+      { label: 'Stalled 90d+', value: stalled90, sub: '3개월 이상 무소식', tone: 'alert', filters: { health: 'stalled90' } },
+      { label: 'No activity record', value: norecord, sub: '기록 자체가 없음', tone: 'alert', filters: { health: 'norecord' } },
+    ];
+
+    $('kpis').innerHTML = KPIS.map(
+      (k, i) => `
+      <button type="button" class="kpi ${k.tone ?? ''}" data-kpi="${i}">
+        <span class="kpi-label">${escape(k.label)}</span>
+        <span class="kpi-value">${k.value}</span>
+        <span class="kpi-sub">${escape(k.sub)}</span>
+      </button>`,
+    ).join('');
+
+    $('kpis').onclick = (event) => {
+      const button = event.target.closest('[data-kpi]');
+      if (!button) return;
+      const kpi = KPIS[Number(button.dataset.kpi)];
+      if (kpi.custom === 'inflight') {
+        // No single filter expresses "started but not finished", so search is left open
+        // and the two end states are excluded by sorting attention-first instead.
+        drillTo({ health: 'attention' });
+        return;
+      }
+      drillTo(kpi.filters);
+    };
+
+    /* ---- stage funnel --------------------------------------------- */
+    // reached = progress >= that stage's weight. parked = sitting exactly there.
+    const steps = [{ n: 0, label: 'Contact', weight: 0 }, ...STAGE_MODEL];
+    const funnel = steps.map((s) => ({
+      ...s,
+      reached: ROWS.filter((r) => r.progress >= s.weight).length,
+      parked: ROWS.filter((r) => r.progress === s.weight).length,
+    }));
+
+    $('funnel').innerHTML = funnel
+      .map((s, i) => {
+        const drop = i === 0 ? 0 : funnel[i - 1].reached - s.reached;
+        const parkedAttention = ROWS.filter((r) => r.progress === s.weight && needsAttention(r)).length;
+        return `
+        <button type="button" class="funnel-row" data-stage="${s.weight}" ${s.parked === 0 ? 'disabled' : ''}
+                title="${escape(s.label)} 단계 ${s.parked}건 보기">
+          <span class="f-label">${escape(s.label)}</span>
+          <span class="f-weight">${s.weight}%</span>
+          <span class="f-bar"><span style="width:${pct(s.reached, ROWS.length)}%"></span></span>
+          <span class="f-reached">${s.reached}</span>
+          <span class="f-drop">${drop > 0 ? `−${drop}` : ''}</span>
+          <span class="f-parked ${parkedAttention > 0 ? 'warn' : ''}">${parkedLabel(s, parkedAttention)}</span>
+        </button>`;
+      })
+      .join('');
+
+    function parkedLabel(step, atRisk) {
+      if (step.parked === 0) return '';
+      if (step.weight === 100) return `${step.parked}건 완료`;
+      if (atRisk === 0) return `${step.parked}건 대기`;
+      if (atRisk === step.parked) return `${step.parked}건 대기 · 전부 위험`;
+      return `${step.parked}건 대기 · ${atRisk} 위험`;
+    }
+
+    $('funnel').onclick = (event) => {
+      const button = event.target.closest('[data-stage]');
+      if (button && !button.disabled) drillTo({ stageAt: button.dataset.stage });
+    };
+
+    /* ---- breakdowns ------------------------------------------------ */
+    renderBreakdown('by-pic', 'pic', (value) => ({ pic: value }), '담당자 없음');
+    renderBreakdown('by-category', 'category', (value) => ({ category: value }), '미분류');
+
+    /* ---- aging ------------------------------------------------------ */
+    const open = ROWS.filter((r) => r.status !== 'Live');
+    const BUCKETS = [
+      { key: 'ok', label: '14일 이내', test: (r) => r.days !== null && r.days <= 14, health: '' },
+      { key: 'watch', label: '15 – 30일', test: (r) => r.days !== null && r.days > 14 && r.days <= 30, health: 'watch' },
+      { key: 'd30', label: '31 – 90일', test: (r) => r.days !== null && r.days > 30 && r.days <= 90, health: 'stalled30' },
+      { key: 'd90', label: '90일 초과', test: (r) => r.days !== null && r.days > 90, health: 'stalled90' },
+      { key: 'never', label: '기록 없음', test: (r) => r.days === null, health: 'norecord' },
+    ];
+    const maxBucket = Math.max(1, ...BUCKETS.map((b) => open.filter(b.test).length));
+
+    $('by-aging').innerHTML = BUCKETS.map((b) => {
+      const count = open.filter(b.test).length;
+      return `
+        <button type="button" class="bd-row" data-health="${b.health}" ${count === 0 ? 'disabled' : ''}>
+          <span class="bd-label">${escape(b.label)}</span>
+          <span class="bd-bar"><span class="seg ${b.key}" style="width:${pct(count, maxBucket)}%"></span></span>
+          <span class="bd-count">${count}</span>
+        </button>`;
+    }).join('') +
+      `<p class="bd-foot">완료(Live) ${ROWS.length - open.length}건은 제외. 진행 중 ${open.length}건 기준.</p>`;
+
+    $('by-aging').onclick = (event) => {
+      const button = event.target.closest('[data-health]');
+      if (button && !button.disabled) drillTo({ health: button.dataset.health });
+    };
+
+    /* ---- top attention --------------------------------------------- */
+    const top = [...ROWS]
+      .filter(needsAttention)
+      .sort((a, b) => a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0))
+      .slice(0, 10);
+
+    $('top-attention').innerHTML = top.length
+      ? top
+          .map(
+            (r) => `
+        <li>
+          <button type="button" class="top-row" data-project="${escape(r.project)}">
+            <span class="t-name">${escape(r.project)}${r.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}</span>
+            <span class="t-stage">${escape(r.currentStage ?? 'Contact')}</span>
+            <span class="t-pic">${escape(r.pic ?? '—')}</span>
+            <span class="t-days ${daysClass(r)}">${daysText(r)}</span>
+          </button>
+        </li>`,
+          )
+          .join('')
+      : '<li class="bd-foot">손봐야 할 건이 없습니다.</li>';
+
+    $('top-attention').onclick = (event) => {
+      const button = event.target.closest('[data-project]');
+      if (button) drillTo({ q: button.dataset.project });
+    };
+  }
+
+  function renderBreakdown(elementId, key, filterFor, emptyLabel) {
+    const groups = new Map();
+    for (const row of ROWS) {
+      const value = row[key] ?? '';
+      const entry = groups.get(value) ?? { total: 0, attention: 0, live: 0 };
+      entry.total += 1;
+      if (needsAttention(row)) entry.attention += 1;
+      if (row.status === 'Live') entry.live += 1;
+      groups.set(value, entry);
+    }
+
+    const sorted = [...groups.entries()].sort((a, b) => b[1].total - a[1].total);
+    const max = Math.max(1, ...sorted.map(([, v]) => v.total));
+
+    $(elementId).innerHTML = sorted
+      .map(
+        ([value, v]) => `
+      <button type="button" class="bd-row" data-value="${escape(value)}">
+        <span class="bd-label">${escape(value || emptyLabel)}</span>
+        <span class="bd-bar" title="${v.live} live · ${v.attention} 위험 · ${v.total - v.live - v.attention} 정상">
+          <span class="seg live" style="width:${pct(v.live, max)}%"></span>
+          <span class="seg risk" style="width:${pct(v.attention, max)}%"></span>
+          <span class="seg rest" style="width:${pct(v.total - v.live - v.attention, max)}%"></span>
+        </span>
+        <span class="bd-count">${v.total}<em>${v.attention ? ` · ${v.attention}` : ''}</em></span>
+      </button>`,
+      )
+      .join('') +
+      `<p class="bd-foot"><span class="key live"></span> Live &nbsp; <span class="key risk"></span> 손이 필요함 &nbsp; <span class="key rest"></span> 그 외</p>`;
+
+    $(elementId).onclick = (event) => {
+      const button = event.target.closest('[data-value]');
+      if (button) drillTo(filterFor(button.dataset.value));
+    };
+  }
+
+  /* ================================================================ list */
+  const options = (id, values) => {
     const select = $(id);
     for (const value of values) {
       const option = document.createElement('option');
@@ -113,18 +283,16 @@
       select.append(option);
     }
     select.dataset.empty = 'true';
-    select.setAttribute('aria-label', label);
   };
 
   const uniqueSorted = (key) =>
     [...new Set(ROWS.map((r) => r[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
 
-  options('f-status', uniqueSorted('status'), 'Status');
-  options('f-category', uniqueSorted('category'), 'Category');
-  options('f-pic', uniqueSorted('pic'), 'PIC');
+  options('f-status', uniqueSorted('status'));
+  options('f-category', uniqueSorted('category'));
+  options('f-pic', uniqueSorted('pic'));
   $('f-health').dataset.empty = 'true';
 
-  /* ---------------------------------------------------------------- filtering */
   function visibleRows() {
     const q = state.q.trim().toLowerCase();
 
@@ -132,9 +300,10 @@
       if (state.status && row.status !== state.status) return false;
       if (state.category && row.category !== state.category) return false;
       if (state.pic && row.pic !== state.pic) return false;
+      if (state.stageAt !== '' && row.progress !== Number(state.stageAt)) return false;
       if (state.health) {
         if (state.health === 'attention') {
-          if (!NEEDS_ATTENTION.has(row.health)) return false;
+          if (!needsAttention(row)) return false;
         } else if (row.health !== state.health) return false;
       }
       if (q) {
@@ -152,19 +321,14 @@
     // Default order: what needs a human first. Severity band, then how far along the
     // integration is (more invested = more at stake), then how long it has been quiet.
     if (key === 'attention') {
-      return filtered.sort(
-        (a, b) => a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0),
-      );
+      return filtered.sort((a, b) => a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0));
     }
 
     return filtered.sort((a, b) => {
       let x = a[key];
       let y = b[key];
-
-      // Nulls always sort last, whichever direction is active.
-      if (x === null || x === undefined) return 1;
+      if (x === null || x === undefined) return 1; // nulls last, either direction
       if (y === null || y === undefined) return -1;
-
       if (typeof x === 'number' && typeof y === 'number') return (x - y) * sign;
       x = String(x).toLowerCase();
       y = String(y).toLowerCase();
@@ -172,7 +336,6 @@
     });
   }
 
-  /* ---------------------------------------------------------------- render */
   function rowHtml(row) {
     const statusClass = STATUS_CLASS[row.status] ?? 'contact';
     const track = row.stages
@@ -240,35 +403,23 @@
       </tr>`;
   }
 
-  function render() {
+  function renderList() {
     const rows = visibleRows();
 
-    $('tbody').innerHTML = rows
-      .map((row) => rowHtml(row) + (state.open.has(row.no) ? detailHtml(row) : ''))
-      .join('');
-
+    $('tbody').innerHTML = rows.map((row) => rowHtml(row) + (state.open.has(row.no) ? detailHtml(row) : '')).join('');
     $('empty').hidden = rows.length > 0;
 
-    const attentionShown = rows.filter((r) => NEEDS_ATTENTION.has(r.health)).length;
+    const shown = rows.filter(needsAttention).length;
     const scope = rows.length === ROWS.length ? `${rows.length} projects` : `${rows.length} of ${ROWS.length} projects`;
     const order =
       state.sort === 'attention'
         ? 'sorted by attention — most stuck first, finished ones last'
         : `sorted by ${state.sort} (${state.dir})`;
-    $('resultline').textContent = `${scope} · ${attentionShown} need attention · ${order}`;
+    $('resultline').textContent = `${scope} · ${shown} need attention · ${order}`;
 
     for (const th of document.querySelectorAll('th.sortable')) {
       if (th.dataset.sort === state.sort) th.dataset.dir = state.dir;
       else delete th.dataset.dir;
-    }
-
-    for (const tile of document.querySelectorAll('[data-tile]')) {
-      const t = TILES.find((x) => x.key === tile.dataset.tile);
-      const active =
-        t.key === 'all'
-          ? !state.status && !state.health
-          : (t.filter.status ?? '') === state.status && (t.filter.health ?? '') === state.health && (t.filter.status || t.filter.health);
-      tile.setAttribute('aria-pressed', active ? 'true' : 'false');
     }
   }
 
@@ -281,12 +432,23 @@
     for (const id of ['f-status', 'f-category', 'f-pic', 'f-health']) {
       $(id).dataset.empty = $(id).value === '' ? 'true' : 'false';
     }
+
+    // The stage filter has no dropdown — it only arrives from the funnel, so it shows
+    // as a removable chip instead of silently narrowing the table.
+    const chip = $('f-stage');
+    if (state.stageAt === '') {
+      chip.hidden = true;
+    } else {
+      const step = [{ label: 'Contact', weight: 0 }, ...STAGE_MODEL].find((s) => s.weight === Number(state.stageAt));
+      chip.hidden = false;
+      chip.textContent = `Stage: ${step ? step.label : `${state.stageAt}%`}  ✕`;
+    }
   }
 
-  /* ---------------------------------------------------------------- events */
+  /* ================================================================ events */
   $('search').addEventListener('input', (e) => {
     state.q = e.target.value;
-    render();
+    renderList();
   });
 
   for (const [id, key] of [
@@ -298,9 +460,15 @@
     $(id).addEventListener('change', (e) => {
       state[key] = e.target.value;
       e.target.dataset.empty = e.target.value === '' ? 'true' : 'false';
-      render();
+      renderList();
     });
   }
+
+  $('f-stage').addEventListener('click', () => {
+    state.stageAt = '';
+    syncControls();
+    renderList();
+  });
 
   document.querySelector('thead').addEventListener('click', (event) => {
     const th = event.target.closest('th.sortable');
@@ -309,10 +477,9 @@
     if (state.sort === key) state.dir = state.dir === 'asc' ? 'desc' : 'asc';
     else {
       state.sort = key;
-      // Numbers read best largest-first; text reads best A-Z.
-      state.dir = ['days', 'progress', 'no'].includes(key) ? 'desc' : 'asc';
+      state.dir = ['days', 'progress', 'no'].includes(key) ? 'desc' : 'asc'; // numbers read best largest-first
     }
-    render();
+    renderList();
   });
 
   $('tbody').addEventListener('click', (event) => {
@@ -321,14 +488,14 @@
     const no = Number(tr.dataset.no);
     if (state.open.has(no)) state.open.delete(no);
     else state.open.add(no);
-    render();
+    renderList();
   });
 
   $('reset').addEventListener('click', () => {
-    Object.assign(state, { q: '', status: '', category: '', pic: '', health: '', sort: 'attention', dir: 'asc' });
+    Object.assign(state, { q: '', status: '', category: '', pic: '', health: '', stageAt: '', sort: 'attention', dir: 'asc' });
     state.open.clear();
     syncControls();
-    render();
+    renderList();
   });
 
   $('export').addEventListener('click', () => {
@@ -359,18 +526,22 @@
     const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName);
     if (event.key === '/' && !typing) {
       event.preventDefault();
+      showTab('list');
       $('search').focus();
       $('search').select();
     } else if (event.key === 'Escape') {
       if (state.q) {
         state.q = '';
         syncControls();
-        render();
+        renderList();
       }
       $('search').blur();
     }
   });
 
+  /* ================================================================ boot */
+  renderDashboard();
   syncControls();
-  render();
+  renderList();
+  showTab(location.hash.slice(1) === 'list' ? 'list' : 'dashboard');
 })();

@@ -17,65 +17,118 @@
       <div class="meta" id="meta"></div>
     </header>
 
-    <main>
-      <!-- Clickable summary. Each tile is a filter. -->
-      <section class="tiles" id="tiles" aria-label="Summary"></section>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="View">
+      <button type="button" role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
+      <button type="button" role="tab" data-tab="list" aria-selected="false">All projects</button>
+    </nav>
 
-      <section class="toolbar" aria-label="Filters">
-        <input
-          id="search"
-          type="search"
-          placeholder="Search partner, PIC, stage…   ( / )"
-          autocomplete="off"
-          aria-label="Search"
-        />
-        <select id="f-status" aria-label="Status"><option value="">Status: all</option></select>
-        <select id="f-category" aria-label="Category"><option value="">Category: all</option></select>
-        <select id="f-pic" aria-label="PIC"><option value="">PIC: all</option></select>
-        <select id="f-health" aria-label="Activity">
-          <option value="">Activity: all</option>
-          <option value="norecord">No activity record</option>
-          <option value="stalled90">Stalled 90d+</option>
-          <option value="stalled30">Stalled 30d+</option>
-          <option value="watch">Quiet 14d+</option>
-          <option value="attention">Needs attention (any of the above)</option>
-          <option value="live">Live</option>
-        </select>
-        <span class="spacer"></span>
-        <button id="export" type="button" class="btn">Export CSV</button>
-        <button id="reset" type="button" class="btn ghost">Reset</button>
+    <main>
+      <!-- ============================================================ DASHBOARD -->
+      <section id="view-dashboard" role="tabpanel" aria-label="Dashboard">
+        <div class="kpis" id="kpis"></div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Stage funnel</h2>
+            <p>몇 개가 각 단계까지 갔고, 지금 어디에 몰려 있는지. 막대를 클릭하면 그 단계에 머무는 건들만 리스트로 넘어갑니다.</p>
+          </div>
+          <div class="funnel" id="funnel"></div>
+        </section>
+
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>PIC별 부하</h2>
+              <p>담당 건수와 그중 손이 필요한 건수. 이름을 클릭하면 해당 담당자 건만 봅니다.</p>
+            </div>
+            <div class="breakdown" id="by-pic"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>카테고리별 현황</h2>
+              <p>연동 유형별 분포와 위험 비중.</p>
+            </div>
+            <div class="breakdown" id="by-category"></div>
+          </section>
+        </div>
+
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>마지막 활동 경과</h2>
+              <p>완료(Live) 건은 제외한, 진행 중 건들의 침묵 기간 분포.</p>
+            </div>
+            <div class="breakdown" id="by-aging"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>지금 손봐야 할 10건</h2>
+              <p>방치 심각도 → 진행률 → 경과일 순. 클릭하면 해당 건으로 이동합니다.</p>
+            </div>
+            <ol class="toplist" id="top-attention"></ol>
+          </section>
+        </div>
       </section>
 
-      <p class="resultline" id="resultline" aria-live="polite"></p>
+      <!-- ============================================================ LIST -->
+      <section id="view-list" role="tabpanel" aria-label="All projects" hidden>
+        <div class="toolbar" role="group" aria-label="Filters">
+          <input
+            id="search"
+            type="search"
+            placeholder="Search partner, PIC, stage…   ( / )"
+            autocomplete="off"
+            aria-label="Search"
+          />
+          <select id="f-status" aria-label="Status"><option value="">Status: all</option></select>
+          <select id="f-category" aria-label="Category"><option value="">Category: all</option></select>
+          <select id="f-pic" aria-label="PIC"><option value="">PIC: all</option></select>
+          <select id="f-health" aria-label="Activity">
+            <option value="">Activity: all</option>
+            <option value="norecord">No activity record</option>
+            <option value="stalled90">Stalled 90d+</option>
+            <option value="stalled30">Stalled 30d+</option>
+            <option value="watch">Quiet 14d+</option>
+            <option value="attention">Needs attention (any of the above)</option>
+            <option value="live">Live</option>
+          </select>
+          <button type="button" class="chipfilter" id="f-stage" hidden></button>
+          <span class="spacer"></span>
+          <button id="export" type="button" class="btn">Export CSV</button>
+          <button id="reset" type="button" class="btn ghost">Reset</button>
+        </div>
 
-      <section class="tablewrap">
-        <table id="table">
-          <thead>
-            <tr>
-              <th scope="col" class="num sortable" data-sort="no">#</th>
-              <th scope="col" class="sortable" data-sort="project">Partner</th>
-              <th scope="col" class="sortable" data-sort="category">Category</th>
-              <th scope="col" class="sortable" data-sort="status">Status</th>
-              <th scope="col" class="sortable" data-sort="progress">Progress</th>
-              <th scope="col" class="track-col">Stage track</th>
-              <th scope="col" class="sortable" data-sort="pic">PIC</th>
-              <th scope="col" class="sortable" data-sort="team">Team</th>
-              <th scope="col" class="sortable" data-sort="devLoad">Dev load</th>
-              <th scope="col" class="sortable" data-sort="switching">Switching</th>
-              <th scope="col" class="sortable" data-sort="lastActivity">Last activity</th>
-              <th scope="col" class="num sortable" data-sort="days">Days</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-        <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+        <p class="resultline" id="resultline" aria-live="polite"></p>
+
+        <div class="tablewrap">
+          <table id="table">
+            <thead>
+              <tr>
+                <th scope="col" class="num sortable" data-sort="no">#</th>
+                <th scope="col" class="sortable" data-sort="project">Partner</th>
+                <th scope="col" class="sortable" data-sort="category">Category</th>
+                <th scope="col" class="sortable" data-sort="status">Status</th>
+                <th scope="col" class="sortable" data-sort="progress">Progress</th>
+                <th scope="col" class="track-col">Stage track</th>
+                <th scope="col" class="sortable" data-sort="pic">PIC</th>
+                <th scope="col" class="c-team sortable" data-sort="team">Team</th>
+                <th scope="col" class="sortable" data-sort="devLoad">Dev load</th>
+                <th scope="col" class="c-switching sortable" data-sort="switching">Switching</th>
+                <th scope="col" class="sortable" data-sort="lastActivity">Last activity</th>
+                <th scope="col" class="num sortable" data-sort="days">Days</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+        </div>
       </section>
 
       <footer class="foot">
-        <span>Excel is the source of truth. This page is read-only — edit the sheet, run <code>update.bat</code>, push.</span>
-        <span class="keys">
-          <kbd>/</kbd> search · <kbd>Esc</kbd> clear · click a row for stage dates
-        </span>
+        <span>Excel is the source of truth. This page is read-only — edit the sheet, push, done.</span>
+        <span class="keys"><kbd>/</kbd> search · <kbd>Esc</kbd> clear · click a row for stage dates</span>
       </footer>
     </main>
 
