@@ -1,0 +1,7 @@
+node_modules
+
+# Excel lock files, created while the workbook is open
+~$*.xlsx
+
+# data/tracker.js and data/tracker.json ARE committed on purpose —
+# that is what makes index.html work by just opening it.

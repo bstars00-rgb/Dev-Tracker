@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OHMY Dev Tracker</title>
+    <meta name="description" content="Read-only view of the OHMYHOTEL API integration Dev Tracker." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📡</text></svg>" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">OHMY</span>
+        <h1>Dev Tracker</h1>
+      </div>
+      <div class="meta" id="meta"></div>
+    </header>
+
+    <main>
+      <!-- Clickable summary. Each tile is a filter. -->
+      <section class="tiles" id="tiles" aria-label="Summary"></section>
+
+      <section class="toolbar" aria-label="Filters">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search partner, PIC, stage…   ( / )"
+          autocomplete="off"
+          aria-label="Search"
+        />
+        <select id="f-status" aria-label="Status"><option value="">Status: all</option></select>
+        <select id="f-category" aria-label="Category"><option value="">Category: all</option></select>
+        <select id="f-pic" aria-label="PIC"><option value="">PIC: all</option></select>
+        <select id="f-health" aria-label="Activity">
+          <option value="">Activity: all</option>
+          <option value="norecord">No activity record</option>
+          <option value="stalled90">Stalled 90d+</option>
+          <option value="stalled30">Stalled 30d+</option>
+          <option value="watch">Quiet 14d+</option>
+          <option value="attention">Needs attention (any of the above)</option>
+          <option value="live">Live</option>
+        </select>
+        <span class="spacer"></span>
+        <button id="export" type="button" class="btn">Export CSV</button>
+        <button id="reset" type="button" class="btn ghost">Reset</button>
+      </section>
+
+      <p class="resultline" id="resultline" aria-live="polite"></p>
+
+      <section class="tablewrap">
+        <table id="table">
+          <thead>
+            <tr>
+              <th scope="col" class="num sortable" data-sort="no">#</th>
+              <th scope="col" class="sortable" data-sort="project">Partner</th>
+              <th scope="col" class="sortable" data-sort="category">Category</th>
+              <th scope="col" class="sortable" data-sort="status">Status</th>
+              <th scope="col" class="sortable" data-sort="progress">Progress</th>
+              <th scope="col" class="track-col">Stage track</th>
+              <th scope="col" class="sortable" data-sort="pic">PIC</th>
+              <th scope="col" class="sortable" data-sort="team">Team</th>
+              <th scope="col" class="sortable" data-sort="devLoad">Dev load</th>
+              <th scope="col" class="sortable" data-sort="switching">Switching</th>
+              <th scope="col" class="sortable" data-sort="lastActivity">Last activity</th>
+              <th scope="col" class="num sortable" data-sort="days">Days</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="empty" id="empty" hidden>Nothing matches those filters.</p>
+      </section>
+
+      <footer class="foot">
+        <span>Excel is the source of truth. This page is read-only — edit the sheet, run <code>update.bat</code>, push.</span>
+        <span class="keys">
+          <kbd>/</kbd> search · <kbd>Esc</kbd> clear · click a row for stage dates
+        </span>
+      </footer>
+    </main>
+
+    <script src="data/tracker.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

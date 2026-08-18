@@ -1,0 +1,44 @@
+name: Check the workbook converts
+
+# Catches the case that actually breaks this project: someone renames a column,
+# moves the header row, or renames the sheet, and the board silently goes blank.
+# No deployment — this repo is private and the board is distributed internally.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/Dev_Schedule.xlsx'
+      - 'scripts/**'
+      - 'package.json'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Convert Excel to JSON
+        run: npm run build
+
+      - name: The sheet must produce rows
+        run: |
+          count=$(node -e "console.log(require('./data/tracker.json').rows.length)")
+          echo "rows parsed: $count"
+          if [ "$count" -lt 1 ]; then
+            echo "::error::The Dev Tracker sheet produced 0 rows — check the sheet name, header row and column names."
+            exit 1
+          fi
+
+      - name: Warn if the committed board is out of date
+        run: |
+          if ! git diff --quiet -- data/tracker.js; then
+            echo "::warning::data/tracker.js does not match the workbook. Run update.bat and commit the result, or the board will show old numbers."
+          fi

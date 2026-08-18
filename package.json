@@ -1,0 +1,14 @@
+{
+  "name": "ohmy-dev-tracker-board",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Read-only web view of the OHMYHOTEL Dev Tracker sheet. Excel stays the source of truth.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
+}
