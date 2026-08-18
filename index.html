@@ -6,7 +6,7 @@
     <title>OHMY Dev Tracker</title>
     <meta name="description" content="Read-only view of the OHMYHOTEL API integration Dev Tracker." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📡</text></svg>" />
-    <link rel="stylesheet" href="styles.css?v=20260818T0650" />
+    <link rel="stylesheet" href="styles.css?v=20260818T0658" />
   </head>
   <body>
     <header class="topbar">
@@ -34,6 +34,17 @@
         <section class="panel">
           <div class="panel-head">
             <div>
+              <h2 data-i18n="panel.matrix.title"></h2>
+              <p data-i18n="panel.matrix.desc"></p>
+            </div>
+          </div>
+          <div class="matrix" id="matrix"></div>
+          <p class="panel-foot" id="matrix-note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
               <h2 data-i18n="panel.actions.title"></h2>
               <p data-i18n="panel.actions.desc"></p>
             </div>
@@ -46,8 +57,9 @@
                 <tr>
                   <th scope="col" data-i18n="th.act.partner"></th>
                   <th scope="col" data-i18n="th.act.impact"></th>
-                  <th scope="col" data-i18n="th.act.stage"></th>
                   <th scope="col" data-i18n="th.act.route"></th>
+                  <th scope="col" data-i18n="th.act.class"></th>
+                  <th scope="col" data-i18n="th.act.stage"></th>
                   <th scope="col" data-i18n="th.act.next"></th>
                   <th scope="col" data-i18n="th.act.watch"></th>
                   <th scope="col" class="num" data-i18n="th.act.days"></th>
@@ -104,6 +116,7 @@
           <select id="f-category"></select>
           <select id="f-pic"></select>
           <select id="f-stage"></select>
+          <select id="f-class"></select>
           <select id="f-health"></select>
           <span class="spacer"></span>
           <button id="export" type="button" class="btn" data-i18n="btn.export"></button>
@@ -142,8 +155,8 @@
       </footer>
     </main>
 
-    <script src="data/tracker.js?v=20260818T0650"></script>
-    <script src="i18n.js?v=20260818T0650"></script>
-    <script src="app.js?v=20260818T0650"></script>
+    <script src="data/tracker.js?v=20260818T0658"></script>
+    <script src="i18n.js?v=20260818T0658"></script>
+    <script src="app.js?v=20260818T0658"></script>
   </body>
 </html>

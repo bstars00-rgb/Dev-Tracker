@@ -596,3 +596,84 @@ kbd {
 .watch.sales { color: var(--faint); background: var(--contact-bg); }
 
 .a-lead { display: block; margin-top: 3px; font-size: 10.5px; color: var(--faint); }
+
+/* ---------------------------------------------------------------- effort x impact */
+.matrix {
+  display: grid;
+  grid-template-columns: 78px 1fr 1fr;
+  gap: 6px;
+  padding: 10px 13px 4px;
+}
+
+.mx-corner { }
+.mx-head {
+  align-self: end;
+  padding-bottom: 2px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--muted);
+  text-align: center;
+}
+.mx-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--muted);
+  text-align: right;
+}
+
+.mx-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  appearance: none;
+  cursor: pointer;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--faint);
+  border-radius: var(--radius);
+  padding: 9px 11px 10px;
+  color: inherit;
+  font: inherit;
+  min-height: 96px;
+  transition: border-color 0.12s, transform 0.08s;
+}
+.mx-box:hover { transform: translateY(-1px); border-color: var(--faint); }
+.mx-box.quickwin { border-left-color: var(--live); }
+.mx-box.major { border-left-color: var(--dev); }
+.mx-box.fillin { border-left-color: var(--faint); }
+.mx-box.justify { border-left-color: var(--danger); }
+
+.mx-name { font-size: 12px; font-weight: 650; }
+.mx-box.quickwin .mx-name { color: var(--live); }
+.mx-box.major .mx-name { color: var(--dev); }
+.mx-box.justify .mx-name { color: var(--danger); }
+.mx-value { font-size: 26px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.mx-bar { display: flex; height: 4px; border-radius: 99px; background: var(--line-soft); overflow: hidden; }
+.mx-bar .seg { height: 100%; }
+.mx-desc { font-size: 11px; line-height: 1.35; color: var(--muted); }
+
+@media (max-width: 700px) {
+  .matrix { grid-template-columns: 60px 1fr 1fr; }
+  .mx-desc { display: none; }
+}
+
+/* class chip in the action table */
+.klass {
+  display: inline-block;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.klass.quickwin { color: var(--live); background: var(--live-bg); }
+.klass.major { color: var(--dev); background: var(--dev-bg); }
+.klass.fillin { color: var(--contact); background: var(--contact-bg); }
+.klass.justify { color: var(--danger); background: var(--danger-bg); }
+
+.a-load { display: block; margin-top: 3px; font-size: 10.5px; color: var(--faint); }

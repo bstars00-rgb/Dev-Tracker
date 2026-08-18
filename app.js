@@ -78,6 +78,7 @@
     impact: '',
     route: '',
     load: '',
+    klass: '',
     sort: 'attention',
     dir: 'asc',
     open: new Set(),
@@ -102,7 +103,7 @@
 
   /** Jump from any dashboard element into the list with a filter already applied. */
   function drillTo(filters) {
-    Object.assign(state, { q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '' }, filters);
+    Object.assign(state, { q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '' }, filters);
     syncControls();
     renderList();
     showTab('list');
@@ -201,6 +202,25 @@
   }
 
   const WATCH_ORDER = { act: 0, verify: 1, standby: 2, heads: 3, sales: 4 };
+
+  /**
+   * Effort x impact, the classic action-priority split.
+   *
+   * Effort is OUR effort: the sheet's "OHMY Dev Load". Impact is revenue and volume
+   * upside, not risk. Impact is only High or not — Mid and blank both land in "low", and
+   * the panel says so out loud, because 93 of 108 rows have no impact set and pretending
+   * otherwise would make the matrix lie.
+   */
+  const CLASSES = ['quickwin', 'major', 'fillin', 'justify'];
+
+  function classOf(row) {
+    const bigImpact = row.impact === 'High';
+    const bigEffort = row.devLoad === 'full' || row.devLoad === 'half';
+    if (!bigEffort) return bigImpact ? 'quickwin' : 'fillin';
+    return bigImpact ? 'major' : 'justify';
+  }
+
+  const CLASS_ORDER = { quickwin: 0, major: 1, justify: 2, fillin: 3 };
 
   /* ================================================================ cards */
   function renderCards() {
@@ -504,6 +524,7 @@
         // Engineering first, and inside that the biggest commercial upside first.
         return (
           WATCH_ORDER[watchLevel(a.row)] - WATCH_ORDER[watchLevel(b.row)] ||
+          CLASS_ORDER[classOf(a.row)] - CLASS_ORDER[classOf(b.row)] ||
           impact(a.row) - impact(b.row) ||
           b.row.progress - a.row.progress ||
           (b.row.days ?? 0) - (a.row.days ?? 0)
@@ -535,8 +556,12 @@
         <tr data-project="${escape(row.project)}">
           <td class="a-name">${escape(row.project)}</td>
           <td class="dim">${row.impact ? escape(row.impact) : '\u2014'}</td>
+          <td>
+            <span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span>
+            <span class="a-load">${escape(t(`load.${row.devLoad}`))}</span>
+          </td>
+          <td><span class="klass ${classOf(row)}">${escape(t(`class.${classOf(row)}`))}</span></td>
           <td class="dim">${escape(row.currentStage ?? 'Contact')} <span class="a-pct">${row.progress}%</span></td>
-          <td><span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span></td>
           <td class="a-next">
             ${escape(action.text)}
             ${action.caveat ? `<span class="a-caveat">${escape(action.caveat)}</span>` : ''}
@@ -552,7 +577,7 @@
         </tr>`,
           )
           .join('')
-      : `<tr><td colspan="7" class="empty">${escape(t('panel.actions.empty'))}</td></tr>`;
+      : `<tr><td colspan="8" class="empty">${escape(t('panel.actions.empty'))}</td></tr>`;
 
     $('actions-scope').onclick = (event) => {
       const button = event.target.closest('[data-scope]');
@@ -567,8 +592,58 @@
     };
   }
 
+  /** The 2x2. Counts are whole-portfolio, not just the in-flight rows. */
+  function renderMatrix() {
+    const cell = (klass) => ROWS.filter((r) => classOf(r) === klass);
+    const boxes = [
+      { klass: 'quickwin', row: 0, col: 0 },
+      { klass: 'fillin', row: 0, col: 1 },
+      { klass: 'major', row: 1, col: 0 },
+      { klass: 'justify', row: 1, col: 1 },
+    ];
+
+    $('matrix').innerHTML =
+      `<div class="mx-corner"></div>
+       <div class="mx-head">${escape(t('matrix.impact.high'))}</div>
+       <div class="mx-head">${escape(t('matrix.impact.low'))}</div>
+       <div class="mx-side">${escape(t('matrix.effort.low'))}</div>` +
+      boxes
+        .slice(0, 2)
+        .map((b) => boxHtml(b.klass, cell(b.klass)))
+        .join('') +
+      `<div class="mx-side">${escape(t('matrix.effort.high'))}</div>` +
+      boxes
+        .slice(2)
+        .map((b) => boxHtml(b.klass, cell(b.klass)))
+        .join('');
+
+    function boxHtml(klass, rows) {
+      const live = rows.filter((r) => r.progress >= 100).length;
+      const risk = rows.filter(needsAttention).length;
+      return `
+        <button type="button" class="mx-box ${klass}" data-class="${klass}">
+          <span class="mx-name">${escape(t(`class.${klass}`))}</span>
+          <span class="mx-value">${rows.length}</span>
+          <span class="mx-bar">
+            <span class="seg live" style="width:${pct(live, rows.length || 1)}%"></span>
+            <span class="seg risk" style="width:${pct(risk, rows.length || 1)}%"></span>
+            <span class="seg rest" style="width:${pct(rows.length - live - risk, rows.length || 1)}%"></span>
+          </span>
+          <span class="mx-desc">${escape(t(`class.${klass}.desc`))}</span>
+        </button>`;
+    }
+
+    $('matrix-note').textContent = t('matrix.unknown', { n: ROWS.filter((r) => !r.impact).length });
+
+    $('matrix').onclick = (event) => {
+      const button = event.target.closest('[data-class]');
+      if (button) drillTo({ klass: button.dataset.class });
+    };
+  }
+
   function renderDashboard() {
     renderCards();
+    renderMatrix();
     renderActions();
     renderBreakdown('by-pic', 'pic', (value) => ({ pic: value }), t('label.nopic'));
     renderBreakdown('by-category', 'category', (value) => ({ category: value }), t('label.uncategorised'));
@@ -598,6 +673,7 @@
       t('filter.stage'),
       STEPS.filter((s) => ROWS.some((r) => r.progress === s.weight)).map((s) => [String(s.weight), `${s.label} (${s.weight}%)`]),
     );
+    fill('f-class', t('filter.class'), CLASSES.map((c) => [c, t(`class.${c}`)]));
     fill('f-health', t('filter.health'), [
       ['attention', t('health.attention')],
       ['norecord', t('health.norecord')],
@@ -618,6 +694,7 @@
       if (state.impact && row.impact !== state.impact) return false;
       if (state.route && routeOf(row) !== state.route) return false;
       if (state.load && row.devLoad !== state.load) return false;
+      if (state.klass && classOf(row) !== state.klass) return false;
       if (state.stageAt !== '' && row.progress !== Number(state.stageAt)) return false;
       if (state.health) {
         if (state.health === 'attention') {
@@ -745,8 +822,9 @@
     $('f-category').value = state.category;
     $('f-pic').value = state.pic;
     $('f-stage').value = state.stageAt;
+    $('f-class').value = state.klass;
     $('f-health').value = state.health;
-    for (const id of ['f-status', 'f-category', 'f-pic', 'f-stage', 'f-health']) {
+    for (const id of ['f-status', 'f-category', 'f-pic', 'f-stage', 'f-class', 'f-health']) {
       $(id).dataset.empty = $(id).value === '' ? 'true' : 'false';
     }
   }
@@ -803,6 +881,7 @@
     ['f-category', 'category'],
     ['f-pic', 'pic'],
     ['f-stage', 'stageAt'],
+    ['f-class', 'klass'],
     ['f-health', 'health'],
   ]) {
     $(id).addEventListener('change', (e) => {
@@ -835,7 +914,7 @@
 
   $('reset').addEventListener('click', () => {
     Object.assign(state, {
-      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '',
+      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '',
       sort: 'attention', dir: 'asc',
     });
     state.open.clear();
@@ -846,7 +925,7 @@
   $('export').addEventListener('click', () => {
     const header = [
       'No', 'Project', 'Category', 'Status', 'Progress %', 'Current stage', 'Biz impact',
-      'PIC', 'Team', 'Dev load', 'Switching', 'Last activity', 'Days since', 'Health',
+      'PIC', 'Team', 'Dev load', 'Build route', 'Class', 'Switching', 'Last activity', 'Days since', 'Health',
     ];
     const cell = (value) => {
       const text = String(value ?? '');
@@ -854,7 +933,7 @@
     };
     const lines = visibleRows().map((r) =>
       [r.no, r.project, r.category, r.status, r.progress, r.currentStage ?? '', r.impact ?? '',
-       r.pic ?? '', r.team ?? '', r.devLoadLabel, r.switching ?? '', r.lastActivity ?? '',
+       r.pic ?? '', r.team ?? '', r.devLoadLabel, routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '', r.lastActivity ?? '',
        r.days ?? '', r.health].map(cell).join(','),
     );
     // BOM so Excel opens the UTF-8 partner names correctly.
