@@ -207,25 +207,28 @@
   function watchLevel(row) {
     const route = routeOf(row);
 
-    // Stages where OHMY engineering itself owes a deliverable, whoever writes the
-    // client code: the DEV key (40/45), the certification pass judgement (60), the live
-    // key (70/75) and launch monitoring (80/90). The deck is explicit that the cert
-    // document and logs are verified by OHMY before a live key is issued.
-    if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) return 'act';
-
-    // Only the build itself follows the route.
-    if (row.progress === 50) {
-      if (route === 'direct') return 'act';
-      return route === 'switching' ? 'verify' : 'standby';
+    // Stages where OHMY engineering owes a deliverable whoever writes the client code:
+    // the DEV key (40/45), the certification pass judgement (60), the live key (70/75)
+    // and launch monitoring (80/90).
+    if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) {
+      return route === 'direct' ? 'omhbuild' : 'omhsupport';
     }
 
-    // Still commercial. Flag the ones that will land hard on engineering later, so the
-    // dev team is not surprised by a full-effort high-impact partner at kickoff.
+    // The build itself. Here the route decides who is actually writing code.
+    if (row.progress === 50) {
+      if (route === 'direct') return 'omhbuild';
+      return route === 'switching' ? 'switchreview' : 'partnerbuild';
+    }
+
+    // Still commercial. Flag the ones that will land hard on engineering later, so a
+    // full-effort or high-impact partner is not a surprise at kickoff.
     if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
     return 'sales';
   }
 
-  const WATCH_ORDER = { act: 0, verify: 1, standby: 2, heads: 3, sales: 4 };
+  const WATCH_ORDER = { omhbuild: 0, omhsupport: 1, switchreview: 2, partnerbuild: 3, heads: 4, sales: 5 };
+  /** Levels where OHMY engineering itself has something to do. */
+  const OMH_WORK = ['omhbuild', 'omhsupport', 'switchreview'];
 
   /**
    * Effort x impact, the classic action-priority split.
@@ -570,7 +573,7 @@
     const rows = candidates
       .map((row) => ({ row, action: nextAction(row) }))
       .filter(({ action }) => action !== null)
-      .filter(({ row }) => actionsScope === 'all' || ['act', 'verify'].includes(watchLevel(row)))
+      .filter(({ row }) => actionsScope === 'all' || OMH_WORK.includes(watchLevel(row)))
       .sort((a, b) => {
         const impact = (r) => (r.impact === 'High' ? 0 : r.impact === 'Mid' ? 1 : 2);
         // Engineering first, and inside that the biggest commercial upside first.
@@ -595,9 +598,10 @@
 
     const tally = (level) => candidates.filter((r) => watchLevel(r) === level).length;
     $('actions-summary').textContent = t('watch.summary', {
-      act: tally('act'),
-      verify: tally('verify'),
-      standby: tally('standby'),
+      build: tally('omhbuild'),
+      support: tally('omhsupport'),
+      review: tally('switchreview'),
+      partner: tally('partnerbuild'),
       heads: tally('heads'),
     });
 
@@ -625,7 +629,9 @@
             <span class="watch ${watchLevel(row)}" title="${escape(t(`watch.${watchLevel(row)}.why`))}">${escape(
               t(`watch.${watchLevel(row)}`),
             )}</span>
-            ${action.owner === 'dev' ? '' : `<span class="a-lead">${escape(t('watch.lead', { who: t(`owner.${action.owner}`) }))}</span>`}
+            ${['heads', 'sales'].includes(watchLevel(row))
+              ? `<span class="a-lead">${escape(t('watch.lead', { who: t(`owner.${action.owner}`) }))}</span>`
+              : ''}
           </td>
           <td class="num"><span class="days ${daysClass(row)}">${escape(daysText(row))}</span></td>
         </tr>`,
