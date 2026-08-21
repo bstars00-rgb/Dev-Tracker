@@ -81,6 +81,7 @@
     load: '',
     klass: '',
     consistency: '',
+    hideDone: false,
     sort: 'attention',
     dir: 'asc',
     open: new Set(),
@@ -125,6 +126,22 @@
       .filter((v) => v !== null);
     return spans.length ? Math.round(spans.reduce((a, b) => a + b, 0) / spans.length) : null;
   }
+
+  /**
+   * The band a project sits in, used as the first sort key everywhere the default
+   * "attention" order applies. Work that is actually moving belongs at the top; a
+   * prospect nobody has opened yet is a different conversation, and something already
+   * shipped is not a task at all.
+   */
+  function band(row) {
+    if (row.progress >= 100) return 2; // done
+    if (row.progress > 0) return 0; // in progress
+    return 1; // not started
+  }
+
+  /** Default ordering: band, then how stalled, then how far along, then how long. */
+  const byAttention = (a, b) =>
+    band(a) - band(b) || a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0);
 
   const quietest = (rows) => rows.filter((r) => r.days !== null).sort((a, b) => b.days - a.days)[0] ?? null;
 
@@ -517,7 +534,7 @@
   function renderTop() {
     const top = [...ROWS]
       .filter(needsAttention)
-      .sort((a, b) => a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0))
+      .sort(byAttention)
       .slice(0, 10);
 
     $('top-attention').innerHTML = top.length
@@ -736,6 +753,7 @@
       if (s.klass && classOf(row) !== s.klass) return false;
       if (s.consistency === 'bad' && row.consistent !== false) return false;
       if (s.consistency === 'ok' && row.consistent === false) return false;
+      if (s.hideDone && row.progress >= 100) return false;
       if (s.stageAt !== '' && row.progress !== Number(s.stageAt)) return false;
       if (s.health) {
         if (s.health === 'attention') {
@@ -760,9 +778,7 @@
 
     // Default order: what needs a human first. Severity band, then how far along the
     // integration is (more invested = more at stake), then how long it has been quiet.
-    if (key === 'attention') {
-      return filtered.sort((a, b) => a.rank - b.rank || b.progress - a.progress || (b.days ?? 0) - (a.days ?? 0));
-    }
+    if (key === 'attention') return filtered.sort(byAttention);
 
     return filtered.sort((a, b) => {
       let x = a[key];
@@ -887,6 +903,7 @@
 
     $('tbody').innerHTML = rows.map((row) => rowHtml(row) + (state.open.has(row.no) ? detailHtml(row) : '')).join('');
     renderCategoryTabs();
+    renderDoneToggle();
     $('empty').hidden = rows.length > 0;
 
     const scope =
@@ -902,6 +919,19 @@
       else delete th.dataset.dir;
     }
   }
+
+  function renderDoneToggle() {
+    const done = ROWS.filter((r) => r.progress >= 100).length;
+    const button = $('toggle-done');
+    button.textContent = t(state.hideDone ? 'btn.showdone' : 'btn.hidedone', { n: done });
+    button.setAttribute('aria-pressed', String(state.hideDone));
+    button.hidden = done === 0;
+  }
+
+  $('toggle-done').addEventListener('click', () => {
+    state.hideDone = !state.hideDone;
+    renderList();
+  });
 
   function syncControls() {
     $('search').value = state.q;
@@ -1001,7 +1031,7 @@
 
   $('reset').addEventListener('click', () => {
     Object.assign(state, {
-      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '', consistency: '',
+      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '', consistency: '', hideDone: false,
       sort: 'attention', dir: 'asc',
     });
     state.open.clear();

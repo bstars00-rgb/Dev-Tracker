@@ -717,3 +717,9 @@ kbd {
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
+
+.btn.toggle[aria-pressed='true'] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}

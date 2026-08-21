@@ -205,6 +205,8 @@ window.I18N = {
     'health.watch': '14일+ 조용함',
     'health.attention': '손이 필요함 (위 전부)',
     'health.live': '완료 (Live)',
+    'btn.hidedone': '완료 {n}건 숨기기',
+    'btn.showdone': '완료 {n}건 다시 표시',
     'btn.export': 'CSV 내보내기',
     'btn.reset': '초기화',
 
@@ -436,6 +438,8 @@ window.I18N = {
     'health.watch': 'Quiet 14d+',
     'health.attention': 'Needs attention (any above)',
     'health.live': 'Live',
+    'btn.hidedone': 'Hide {n} completed',
+    'btn.showdone': 'Show {n} completed',
     'btn.export': 'Export CSV',
     'btn.reset': 'Reset',
 
