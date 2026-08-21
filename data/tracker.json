@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-21T10:06:00.433Z",
+ "generatedAt": "2026-08-21T23:49:27.035Z",
  "sourceFile": "Dev_Schedule.xlsx",
  "sourceSheet": "Dev Tracker",
  "sourceModified": "2026-08-18T08:14:17.353Z",
@@ -96,6 +96,43 @@
    "live": 30
   },
   "withImpact": 18,
+  "withTarget": 0,
+  "withBlocker": 0,
+  "parked": 0,
+  "hasTarget": false,
+  "hasBlocker": false,
+  "stageCoverage": {
+   "CRS": {
+    "rows": 2,
+    "dated": 0,
+    "stagesUsed": 0,
+    "stagesTotal": 11
+   },
+   "Switching System": {
+    "rows": 7,
+    "dated": 0,
+    "stagesUsed": 0,
+    "stagesTotal": 11
+   },
+   "Channel API": {
+    "rows": 79,
+    "dated": 46,
+    "stagesUsed": 11,
+    "stagesTotal": 11
+   },
+   "3rd Party Hotel": {
+    "rows": 13,
+    "dated": 1,
+    "stagesUsed": 1,
+    "stagesTotal": 11
+   },
+   "3rd Party Activity": {
+    "rows": 3,
+    "dated": 0,
+    "stagesUsed": 0,
+    "stagesTotal": 11
+   }
+  },
   "withDevOwner": 0,
   "inconsistent": 0,
   "hasConsistency": false
@@ -120,6 +157,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -230,6 +272,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -340,6 +387,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -450,6 +502,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -560,6 +617,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -670,6 +732,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -780,6 +847,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -890,6 +962,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1000,6 +1077,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1110,8 +1192,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-03",
-   "days": 291,
+   "target": "2025-11-04",
+   "targetSource": "devdone",
+   "targetDrift": 290,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-11-04",
+   "days": 290,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -1148,35 +1235,35 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-10-31"
+     "date": "2025-11-01"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-10-31"
+     "date": "2025-11-01"
     },
     {
      "n": 6,
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-11-01"
+     "date": "2025-11-02"
     },
     {
      "n": 7,
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2025-11-02"
+     "date": "2025-11-03"
     },
     {
      "n": 8,
      "label": "Dev Completion Planned",
      "short": "Complete",
      "weight": 75,
-     "date": "2025-11-03"
+     "date": "2025-11-04"
     },
     {
      "n": 9,
@@ -1220,6 +1307,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1330,6 +1422,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1440,6 +1537,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1550,6 +1652,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1660,8 +1767,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-08-17",
-   "days": 4,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-08-18",
+   "days": 3,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -1677,7 +1789,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-08-17"
+     "date": "2026-08-18"
     },
     {
      "n": 2,
@@ -1770,6 +1882,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1880,6 +1997,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -1990,8 +2112,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-08-28",
-   "days": 358,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-08-29",
+   "days": 357,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -2007,7 +2134,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-08-28"
+     "date": "2025-08-29"
     },
     {
      "n": 2,
@@ -2100,6 +2227,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2210,6 +2342,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2320,6 +2457,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2430,6 +2572,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2540,6 +2687,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2650,6 +2802,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -2760,8 +2917,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-09-11",
-   "days": 344,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-09-12",
+   "days": 343,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -2777,7 +2939,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-09-11"
+     "date": "2025-09-12"
     },
     {
      "n": 2,
@@ -2870,8 +3032,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-12-01",
-   "days": 263,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-12-02",
+   "days": 262,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -2894,7 +3061,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-10-15"
+     "date": "2025-10-16"
     },
     {
      "n": 3,
@@ -2908,14 +3075,14 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-11-30"
+     "date": "2025-12-01"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-12-01"
+     "date": "2025-12-02"
     },
     {
      "n": 6,
@@ -2980,6 +3147,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -3090,8 +3262,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-09-07",
-   "days": 348,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-09-08",
+   "days": 347,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -3107,7 +3284,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-09-07"
+     "date": "2025-09-08"
     },
     {
      "n": 2,
@@ -3200,8 +3377,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-26",
-   "days": 299,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-10-27",
+   "days": 298,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -3217,7 +3399,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-10-26"
+     "date": "2025-10-27"
     },
     {
      "n": 2,
@@ -3310,8 +3492,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-12-09",
-   "days": 255,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-12-10",
+   "days": 254,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -3334,7 +3521,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-12-09"
+     "date": "2025-12-10"
     },
     {
      "n": 3,
@@ -3420,6 +3607,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -3530,8 +3722,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-08-11",
-   "days": 10,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-08-12",
+   "days": 9,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -3547,35 +3744,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-08-07"
+     "date": "2026-08-08"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-08-08"
+     "date": "2026-08-09"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-08-09"
+     "date": "2026-08-10"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-08-10"
+     "date": "2026-08-11"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2026-08-11"
+     "date": "2026-08-12"
     },
     {
      "n": 6,
@@ -3640,6 +3837,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -3750,8 +3952,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-09",
-   "days": 285,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2025-11-10",
+   "days": 284,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -3767,35 +3974,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-11-09"
+     "date": "2025-11-10"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-11-09"
+     "date": "2025-11-10"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2025-11-09"
+     "date": "2025-11-10"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-11-09"
+     "date": "2025-11-10"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-11-09"
+     "date": "2025-11-10"
     },
     {
      "n": 6,
@@ -3860,6 +4067,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -3970,6 +4182,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4080,6 +4297,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4190,6 +4412,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4300,6 +4527,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4410,6 +4642,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4520,8 +4757,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-09-09",
-   "days": -19,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-09-10",
+   "days": -20,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -4537,7 +4779,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-09-09"
+     "date": "2026-09-10"
     },
     {
      "n": 2,
@@ -4630,8 +4872,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-07-19",
-   "days": 33,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-07-20",
+   "days": 32,
    "health": "stalled30",
    "delayNote": "In Progress",
    "consistency": null,
@@ -4647,35 +4894,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-06-04"
+     "date": "2026-06-05"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-07-19"
+     "date": "2026-07-20"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-07-19"
+     "date": "2026-07-20"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-07-19"
+     "date": "2026-07-20"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2026-07-15"
+     "date": "2026-07-16"
     },
     {
      "n": 6,
@@ -4740,6 +4987,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -4850,8 +5102,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-08-13",
-   "days": 8,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-08-14",
+   "days": 7,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -4867,35 +5124,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-08-09"
+     "date": "2026-08-10"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-08-10"
+     "date": "2026-08-11"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-08-11"
+     "date": "2026-08-12"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-08-12"
+     "date": "2026-08-13"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2026-08-13"
+     "date": "2026-08-14"
     },
     {
      "n": 6,
@@ -4960,6 +5217,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5070,8 +5332,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-08-13",
-   "days": 8,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-08-14",
+   "days": 7,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -5087,35 +5354,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-08-09"
+     "date": "2026-08-10"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-08-10"
+     "date": "2026-08-11"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-08-11"
+     "date": "2026-08-12"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-08-12"
+     "date": "2026-08-13"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2026-08-13"
+     "date": "2026-08-14"
     },
     {
      "n": 6,
@@ -5180,8 +5447,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-08-13",
-   "days": 8,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-08-14",
+   "days": 7,
    "health": "ok",
    "delayNote": "In Progress",
    "consistency": null,
@@ -5197,35 +5469,35 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-08-09"
+     "date": "2026-08-10"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-08-10"
+     "date": "2026-08-11"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-08-11"
+     "date": "2026-08-12"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-08-12"
+     "date": "2026-08-13"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2026-08-13"
+     "date": "2026-08-14"
     },
     {
      "n": 6,
@@ -5290,6 +5562,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5400,6 +5677,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5510,6 +5792,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5620,6 +5907,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5730,8 +6022,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-07-08",
-   "days": 44,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-07-09",
+   "days": 43,
    "health": "stalled30",
    "delayNote": "Stalled 30d+",
    "consistency": null,
@@ -5747,21 +6044,21 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-07-08"
+     "date": "2026-07-09"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-07-08"
+     "date": "2026-07-09"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-07-08"
+     "date": "2026-07-09"
     },
     {
      "n": 4,
@@ -5840,6 +6137,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -5950,6 +6252,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6060,6 +6367,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6170,6 +6482,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6280,6 +6597,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6390,6 +6712,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6500,8 +6827,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-04",
-   "days": 229,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
+   "lastActivity": "2026-01-05",
+   "days": 228,
    "health": "stalled90",
    "delayNote": "Stalled 90d+",
    "consistency": null,
@@ -6517,7 +6849,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2026-01-04"
+     "date": "2026-01-05"
     },
     {
      "n": 2,
@@ -6610,6 +6942,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6720,6 +7057,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6830,6 +7172,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -6940,6 +7287,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7050,6 +7402,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7160,6 +7517,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7270,6 +7632,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7380,6 +7747,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7490,6 +7862,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7600,6 +7977,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7710,6 +8092,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7820,6 +8207,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -7930,6 +8322,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -8040,6 +8437,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -8150,6 +8552,11 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": null,
+   "parked": null,
    "lastActivity": null,
    "days": null,
    "health": "norecord",
@@ -8260,8 +8667,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2020-01-14",
-   "days": 2411,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2020-01-15",
+   "parked": null,
+   "lastActivity": "2020-01-15",
+   "days": 2410,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8347,7 +8759,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2020-01-14"
+     "date": "2020-01-15"
     }
    ]
   },
@@ -8370,8 +8782,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8457,7 +8874,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -8480,8 +8897,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8504,7 +8926,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2020-03-01"
+     "date": "2020-03-02"
     },
     {
      "n": 3,
@@ -8567,7 +8989,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -8590,8 +9012,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8677,7 +9104,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -8700,8 +9127,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8787,7 +9219,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -8810,8 +9242,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -8897,7 +9334,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -8920,8 +9357,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9007,7 +9449,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -9030,8 +9472,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9047,21 +9494,21 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2023-09-25"
+     "date": "2023-09-26"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2023-10-17"
+     "date": "2023-10-18"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2023-10-17"
+     "date": "2023-10-18"
     },
     {
      "n": 4,
@@ -9117,7 +9564,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -9140,8 +9587,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9227,7 +9679,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -9250,8 +9702,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9337,7 +9794,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9360,8 +9817,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9447,7 +9909,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9470,8 +9932,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9487,7 +9954,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-10-09"
+     "date": "2025-10-10"
     },
     {
      "n": 2,
@@ -9515,14 +9982,14 @@
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-11-12"
+     "date": "2025-11-13"
     },
     {
      "n": 6,
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-11-23"
+     "date": "2025-11-24"
     },
     {
      "n": 7,
@@ -9557,7 +10024,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9580,8 +10047,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-05-06",
-   "days": 107,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-05-07",
+   "days": 106,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9597,21 +10069,21 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-09-25"
+     "date": "2025-09-26"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2026-01-08"
+     "date": "2026-01-09"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2026-01-08"
+     "date": "2026-01-09"
     },
     {
      "n": 4,
@@ -9632,14 +10104,14 @@
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2026-04-28"
+     "date": "2026-04-29"
     },
     {
      "n": 7,
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2026-05-06"
+     "date": "2026-05-07"
     },
     {
      "n": 8,
@@ -9667,7 +10139,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9690,8 +10162,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9714,7 +10191,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-11-29"
+     "date": "2025-11-30"
     },
     {
      "n": 3,
@@ -9728,14 +10205,14 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-11-30"
+     "date": "2025-12-01"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-11-30"
+     "date": "2025-12-01"
     },
     {
      "n": 6,
@@ -9777,7 +10254,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9800,8 +10277,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9817,7 +10299,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-09-21"
+     "date": "2025-09-22"
     },
     {
      "n": 2,
@@ -9838,14 +10320,14 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-10-24"
+     "date": "2025-10-25"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-12-21"
+     "date": "2025-12-22"
     },
     {
      "n": 6,
@@ -9887,7 +10369,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -9910,8 +10392,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-31",
-   "days": 202,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-02-01",
+   "days": 201,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -9927,7 +10414,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-12-14"
+     "date": "2025-12-15"
     },
     {
      "n": 2,
@@ -9948,7 +10435,7 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2026-01-31"
+     "date": "2026-02-01"
     },
     {
      "n": 5,
@@ -9997,7 +10484,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -10020,8 +10507,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2026-01-06",
-   "days": 227,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2026-01-07",
+   "parked": null,
+   "lastActivity": "2026-01-07",
+   "days": 226,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10107,7 +10599,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2026-01-06"
+     "date": "2026-01-07"
     }
    ]
   },
@@ -10130,8 +10622,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-12-24",
-   "days": 240,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-12-25",
+   "parked": null,
+   "lastActivity": "2025-12-25",
+   "days": 239,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10147,77 +10644,77 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-02-03"
+     "date": "2025-02-04"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-03-04"
+     "date": "2025-03-05"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2025-06-02"
+     "date": "2025-06-03"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-09-24"
+     "date": "2025-09-25"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-09-29"
+     "date": "2025-09-30"
     },
     {
      "n": 6,
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-10-01"
+     "date": "2025-10-02"
     },
     {
      "n": 7,
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2025-10-24"
+     "date": "2025-10-25"
     },
     {
      "n": 8,
      "label": "Dev Completion Planned",
      "short": "Complete",
      "weight": 75,
-     "date": "2025-10-29"
+     "date": "2025-10-30"
     },
     {
      "n": 9,
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2025-11-10"
+     "date": "2025-11-11"
     },
     {
      "n": 10,
      "label": "First Booking",
      "short": "Booking",
      "weight": 90,
-     "date": "2025-11-11"
+     "date": "2025-11-12"
     },
     {
      "n": 11,
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-12-24"
+     "date": "2025-12-25"
     }
    ]
   },
@@ -10240,8 +10737,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10264,7 +10766,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2022-09-17"
+     "date": "2022-09-18"
     },
     {
      "n": 3,
@@ -10313,7 +10815,7 @@
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2022-11-10"
+     "date": "2022-11-11"
     },
     {
      "n": 10,
@@ -10327,7 +10829,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -10350,8 +10852,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-28",
-   "days": 266,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-11-29",
+   "parked": null,
+   "lastActivity": "2025-11-29",
+   "days": 265,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10367,49 +10874,49 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-07-30"
+     "date": "2025-07-31"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-08-05"
+     "date": "2025-08-06"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2025-08-04"
+     "date": "2025-08-05"
     },
     {
      "n": 4,
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-09-30"
+     "date": "2025-10-01"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-09-07"
+     "date": "2025-09-08"
     },
     {
      "n": 6,
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-09-29"
+     "date": "2025-09-30"
     },
     {
      "n": 7,
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2025-10-21"
+     "date": "2025-10-22"
     },
     {
      "n": 8,
@@ -10423,21 +10930,21 @@
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2025-10-29"
+     "date": "2025-10-30"
     },
     {
      "n": 10,
      "label": "First Booking",
      "short": "Booking",
      "weight": 90,
-     "date": "2025-10-30"
+     "date": "2025-10-31"
     },
     {
      "n": 11,
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-11-28"
+     "date": "2025-11-29"
     }
    ]
   },
@@ -10460,8 +10967,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-03",
-   "days": 291,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-11-04",
+   "parked": null,
+   "lastActivity": "2025-11-04",
+   "days": 290,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10477,14 +10989,14 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-08-07"
+     "date": "2025-08-08"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-09-25"
+     "date": "2025-09-26"
     },
     {
      "n": 3,
@@ -10498,28 +11010,28 @@
      "label": "Dev Kickoff Planned",
      "short": "Kickoff",
      "weight": 45,
-     "date": "2025-10-29"
+     "date": "2025-10-30"
     },
     {
      "n": 5,
      "label": "Dev Kickoff / SPEC / DEV Key",
      "short": "Dev",
      "weight": 50,
-     "date": "2025-09-14"
+     "date": "2025-09-15"
     },
     {
      "n": 6,
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-10-12"
+     "date": "2025-10-13"
     },
     {
      "n": 7,
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2025-10-16"
+     "date": "2025-10-17"
     },
     {
      "n": 8,
@@ -10533,21 +11045,21 @@
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2025-10-20"
+     "date": "2025-10-21"
     },
     {
      "n": 10,
      "label": "First Booking",
      "short": "Booking",
      "weight": 90,
-     "date": "2025-10-20"
+     "date": "2025-10-21"
     },
     {
      "n": 11,
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-11-03"
+     "date": "2025-11-04"
     }
    ]
   },
@@ -10570,8 +11082,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-28",
-   "days": 266,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-11-29",
+   "parked": null,
+   "lastActivity": "2025-11-29",
+   "days": 265,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10587,7 +11104,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2025-09-17"
+     "date": "2025-09-18"
     },
     {
      "n": 2,
@@ -10622,7 +11139,7 @@
      "label": "Certification",
      "short": "Cert",
      "weight": 60,
-     "date": "2025-09-14"
+     "date": "2025-09-15"
     },
     {
      "n": 7,
@@ -10643,7 +11160,7 @@
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2025-11-06"
+     "date": "2025-11-07"
     },
     {
      "n": 10,
@@ -10657,7 +11174,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-11-28"
+     "date": "2025-11-29"
     }
    ]
   },
@@ -10680,8 +11197,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-11-03",
-   "days": 291,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-11-04",
+   "parked": null,
+   "lastActivity": "2025-11-04",
+   "days": 290,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10704,14 +11226,14 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2025-09-03"
+     "date": "2025-09-04"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2025-09-04"
+     "date": "2025-09-05"
     },
     {
      "n": 4,
@@ -10739,7 +11261,7 @@
      "label": "Live Test",
      "short": "Test",
      "weight": 70,
-     "date": "2025-09-15"
+     "date": "2025-09-16"
     },
     {
      "n": 8,
@@ -10753,21 +11275,21 @@
      "label": "Live Open",
      "short": "Open",
      "weight": 80,
-     "date": "2025-10-09"
+     "date": "2025-10-10"
     },
     {
      "n": 10,
      "label": "First Booking",
      "short": "Booking",
      "weight": 90,
-     "date": "2025-10-09"
+     "date": "2025-10-10"
     },
     {
      "n": 11,
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-11-03"
+     "date": "2025-11-04"
     }
    ]
   },
@@ -10790,8 +11312,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10807,7 +11334,7 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2020-02-26"
+     "date": "2020-02-27"
     },
     {
      "n": 2,
@@ -10877,7 +11404,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -10900,8 +11427,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -10924,7 +11456,7 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2020-05-08"
+     "date": "2020-05-09"
     },
     {
      "n": 3,
@@ -10987,7 +11519,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -11010,8 +11542,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -11027,21 +11564,21 @@
      "label": "NDA Signed",
      "short": "NDA",
      "weight": 20,
-     "date": "2023-10-28"
+     "date": "2023-10-29"
     },
     {
      "n": 2,
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2023-11-20"
+     "date": "2023-11-21"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2023-11-05"
+     "date": "2023-11-06"
     },
     {
      "n": 4,
@@ -11097,7 +11634,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -11120,8 +11657,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -11207,7 +11749,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -11230,8 +11772,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -11254,14 +11801,14 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2023-11-22"
+     "date": "2023-11-23"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2023-11-13"
+     "date": "2023-11-14"
     },
     {
      "n": 4,
@@ -11317,7 +11864,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -11340,8 +11887,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -11427,7 +11979,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   },
@@ -11450,8 +12002,13 @@
    "itOwner": null,
    "plannedStart": null,
    "plannedEnd": null,
-   "lastActivity": "2025-10-28",
-   "days": 297,
+   "target": null,
+   "targetSource": null,
+   "targetDrift": null,
+   "liveDate": "2025-10-29",
+   "parked": null,
+   "lastActivity": "2025-10-29",
+   "days": 296,
    "health": "live",
    "delayNote": "Live",
    "consistency": null,
@@ -11474,14 +12031,14 @@
      "label": "Contract Signed",
      "short": "Contract",
      "weight": 30,
-     "date": "2024-02-04"
+     "date": "2024-02-05"
     },
     {
      "n": 3,
      "label": "SLA Finalized",
      "short": "SLA",
      "weight": 40,
-     "date": "2024-02-04"
+     "date": "2024-02-05"
     },
     {
      "n": 4,
@@ -11537,7 +12094,7 @@
      "label": "API Live Complete",
      "short": "Live",
      "weight": 100,
-     "date": "2025-10-28"
+     "date": "2025-10-29"
     }
    ]
   }

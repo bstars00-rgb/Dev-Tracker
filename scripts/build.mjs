@@ -84,6 +84,9 @@ const COLUMNS = {
   status: ['Status'],
   plannedStart: ['계획 시작'],
   plannedEnd: ['계획 종료'],
+  // The date people ask about most: when is this partner meant to be live? Not in the
+  // sheet yet. Named here so it renders the day someone adds the column.
+  targetGoLive: ['Target Go-Live', '목표 오픈일', 'Planned Go-Live', 'Target Live Date', '목표 라이브'],
   progress: ['진행율', 'Progress %'],
   currentStage: ['현재 단계'],
   nextGate: ['다음 게이트'],
@@ -96,19 +99,26 @@ const COLUMNS = {
 };
 
 /* ---------------------------------------------------------------- helpers */
+const pad2 = (n) => String(n).padStart(2, '0');
+
 function toISODate(value) {
   if (value === null || value === undefined || value === '') return null;
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  // cellDates gives a Date built in local time, so 2025-11-01 in a UTC+9 office is
+  // 2025-10-31T15:00Z. Reading it back with toISOString() moved every date on the
+  // board a day earlier. Take the local parts, which are the ones the sheet meant.
+  if (value instanceof Date) {
+    return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}`;
+  }
   if (typeof value === 'number') {
     const parsed = XLSX.SSF.parse_date_code(value);
     if (!parsed) return null;
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${parsed.y}-${pad(parsed.m)}-${pad(parsed.d)}`;
+    return `${parsed.y}-${pad2(parsed.m)}-${pad2(parsed.d)}`;
   }
   const text = String(value).trim();
   if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
   const parsed = new Date(text);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
 }
 
 /** Trim, collapse the newlines the sheet embeds in headers and cells, drop placeholders. */
@@ -215,6 +225,12 @@ const missingOptional = Object.entries(IDX).filter(([, i]) => i < 0).map(([k]) =
 if (missingOptional.length) console.warn(`Note: columns not present in this workbook: ${missingOptional.join(', ')}`);
 
 /* ---------------------------------------------------------------- transform */
+/** Statuses that take a row out of the active pipeline, whatever the milestones say. */
+const PARKED = {
+  'on hold': 'hold', hold: 'hold', paused: 'hold', pending: 'hold',
+  dropped: 'dropped', drop: 'dropped', cancelled: 'dropped', canceled: 'dropped', lost: 'dropped',
+};
+
 const today = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
 const rows = [];
 const at = (raw, key) => (IDX[key] >= 0 ? raw[IDX[key]] : null);
@@ -244,6 +260,10 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
   const days = daysBetween(lastActivity, today);
   const status = clean(at(raw, 'status')) ?? 'Contact';
 
+  // Statuses that mean "stop expecting movement". The sheet's list is forward-only
+  // today, so this stays empty until On Hold / Dropped are added to the validation.
+  const parked = PARKED[status.toLowerCase()] ?? null;
+
   // Only the milestones decide whether something is finished. The Status column says
   // "Live" on eight rows whose dates stop at 45-70%, and treating those as done hid a
   // 268-day silence behind a green label. The sheet flags the contradiction itself.
@@ -253,13 +273,27 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
 
   // Recomputed from today, so the board is never wrong just because the sheet is old.
   let health = 'ok';
-  if (done) health = 'live';
+  if (parked) health = 'parked';
+  else if (done) health = 'live';
   else if (lastActivity === null) health = 'norecord';
   else if (days > 90) health = 'stalled90';
   else if (days > 30) health = 'stalled30';
   else if (days > 14) health = 'watch';
 
-  const RANK = { stalled90: 0, stalled30: 1, watch: 2, norecord: 3, ok: 4, live: 5 };
+  const RANK = { stalled90: 0, stalled30: 1, watch: 2, norecord: 3, ok: 4, live: 5, parked: 6 };
+
+  // A target date, and how far off it is. Prefer a real target column; fall back to the
+  // sheet's own "Dev Completion Planned (75%)" milestone, which is the only forward-
+  // looking date the workbook currently holds. Say which one is being shown.
+  const explicitTarget = toISODate(at(raw, 'targetGoLive'));
+  const plannedStage = stages.find((s2) => s2.weight === 75);
+  const target = explicitTarget ?? (done ? null : plannedStage?.date ?? null);
+  const targetSource = explicitTarget ? 'target' : target ? 'devdone' : null;
+  const liveDate = stages.find((s2) => s2.weight === 100)?.date ?? null;
+  // Positive = late. Against the actual live date once live, against today while open.
+  const targetDrift = target
+    ? daysBetween(target, liveDate ? Date.parse(`${liveDate}T00:00:00Z`) : today)
+    : null;
   const devLoad = parseDevLoad(at(raw, 'devLoad'));
   const direction = parseDirection(at(raw, 'direction'));
   const devOwner = clean(at(raw, 'devOwner'));
@@ -283,6 +317,11 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
     itOwner: clean(at(raw, 'itOwner')),
     plannedStart: clean(at(raw, 'plannedStart')),
     plannedEnd: clean(at(raw, 'plannedEnd')),
+    target,
+    targetSource,
+    targetDrift,
+    liveDate,
+    parked,
     lastActivity,
     days,
     health,
@@ -319,6 +358,21 @@ const payload = {
     byCategory: stats('category'),
     byHealth: stats('health'),
     withImpact: rows.filter((r) => r.impact).length,
+    withTarget: rows.filter((r) => r.targetSource === 'target').length,
+    withBlocker: rows.filter((r) => r.blocker).length,
+    parked: rows.filter((r) => r.parked).length,
+    hasTarget: IDX.targetGoLive >= 0,
+    hasBlocker: IDX.blocker >= 0,
+    // How much of the funnel each partner type actually records. Comparing a Channel
+    // API percentage against a CRS one is only fair if both are being tracked at all.
+    stageCoverage: Object.fromEntries(
+      [...new Set(rows.map((r) => r.category))].map((cat) => {
+        const sub = rows.filter((r) => r.category === cat);
+        const dated = sub.filter((r) => r.stages.some((s) => s.date));
+        const used = STAGES.filter((st) => sub.some((r) => r.stages.find((s) => s.n === st.n)?.date)).length;
+        return [cat, { rows: sub.length, dated: dated.length, stagesUsed: used, stagesTotal: STAGES.length }];
+      }),
+    ),
     withDevOwner: rows.filter((r) => r.devOwner).length,
     inconsistent: rows.filter((r) => !r.consistent).length,
     // Whether the sheet carries the column at all — 0 mismatches because the check

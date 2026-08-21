@@ -37,6 +37,9 @@
     Testing: 'test',
     'NDA/Contract': 'nda',
     Contact: 'contact',
+    'On Hold': 'hold',
+    Dropped: 'dropped',
+    Cancelled: 'dropped',
   };
 
   const escape = (value) =>
@@ -196,6 +199,50 @@
 
   const routeLabel = (row) =>
     row.switching ? t('route.switching', { sw: row.switching }) : t(`route.${routeOf(row)}`);
+
+  /**
+   * Who holds this partner *at the stage it is on now*, as opposed to the one PIC who
+   * carries it end to end. The sheet names a salesperson for the whole journey, but the
+   * work hands over: GSM opens it, SLA papers it, engineering takes it from the DEV key
+   * onward. Chasing the PIC on a row sitting at Live Test wastes a day.
+   */
+  function ownerNow(row) {
+    if (row.parked) return row.parked;
+    if (row.progress >= 100) return 'done';
+    return nextAction(row).owner;
+  }
+
+  /**
+   * Target date and how far off it is. Positive drift is late. Once a row is live the
+   * drift is measured against the day it actually opened, so a shipped project keeps an
+   * honest record instead of drifting further every time the page is loaded.
+   */
+  function targetState(row) {
+    if (!row.target) return null;
+    const late = (row.targetDrift ?? 0) > 0;
+    const shipped = Boolean(row.liveDate);
+    return {
+      date: row.target,
+      drift: row.targetDrift ?? 0,
+      source: row.targetSource,
+      tone: shipped ? (late ? 'shipped-late' : 'shipped-ontime') : late ? 'late' : 'ahead',
+      text: shipped
+        ? t(late ? 'target.shippedlate' : 'target.shippedok', { n: Math.abs(row.targetDrift ?? 0) })
+        : t(late ? 'target.late' : 'target.left', { n: Math.abs(row.targetDrift ?? 0) }),
+    };
+  }
+
+  function targetCell(row) {
+    const ts = targetState(row);
+    if (!ts) {
+      return row.progress >= 100
+        ? `<span class="faint">${escape(fmtDate(row.liveDate))}</span>`
+        : `<span class="faint" title="${escape(t('target.none.why'))}">${escape(t('target.none'))}</span>`;
+    }
+    const why = ts.source === 'devdone' ? t('target.src.devdone') : t('target.src.target');
+    return `<span class="target ${ts.tone}" title="${escape(fmtDate(ts.date))} · ${escape(why)}">${escape(ts.text)}</span>
+            <span class="target-date">${escape(fmtDate(ts.date))}</span>`;
+  }
 
   /**
    * How closely OHMY engineering needs to be watching this one, right now.
@@ -709,6 +756,59 @@
     renderBreakdown('by-category', 'category', (value) => ({ category: value }), t('label.uncategorised'));
     renderAging();
     renderTop();
+    renderCoverage();
+    renderGaps();
+  }
+
+  /**
+   * How much of the eleven-stage funnel each partner type actually records.
+   *
+   * The team asked whether progress percentages are comparable across Channel API,
+   * Switching, CRS and 3rd Party. On this sheet they are not, and the reason is blunter
+   * than differing definitions: only Channel API rows carry stage dates at all. A CRS
+   * row reading 0% is not behind, it is untracked. This panel shows which is which
+   * rather than letting the funnel imply a comparison it cannot support.
+   */
+  function renderCoverage() {
+    const cov = data.counts?.stageCoverage;
+    const host = $('by-coverage');
+    if (!host) return;
+    if (!cov) { host.innerHTML = ''; return; }
+
+    host.innerHTML = Object.entries(cov)
+      .sort((a, b) => b[1].rows - a[1].rows)
+      .map(([name, c]) => {
+        const share = c.rows ? Math.round((c.dated / c.rows) * 100) : 0;
+        return `
+        <div class="cov-row ${c.dated === 0 ? 'blank' : ''}">
+          <span class="cov-name">${escape(name)}</span>
+          <span class="cov-meter ${c.dated === 0 ? 'empty' : ''}"><span style="width:${c.dated === 0 ? 100 : share}%"></span></span>
+          <span class="cov-note">${escape(
+            c.dated === 0 ? t('cov.none') : t('cov.row', { dated: c.dated, rows: c.rows, used: c.stagesUsed, total: c.stagesTotal }),
+          )}</span>
+        </div>`;
+      })
+      .join('');
+  }
+
+  /**
+   * Columns the board knows how to render but this workbook does not carry. Said out
+   * loud, next to the data, so a blank column reads as "nobody records this" instead of
+   * "nothing is wrong".
+   */
+  function renderGaps() {
+    const host = $('data-gaps');
+    if (!host) return;
+    const c = data.counts ?? {};
+    const fallbacks = ROWS.filter((r) => r.targetSource === 'devdone').length;
+    const notes = [
+      !c.hasTarget ? t('gap.target', { n: fallbacks, total: ROWS.length }) : null,
+      !c.hasBlocker ? t('gap.blocker') : null,
+      (c.parked ?? 0) === 0 && !ROWS.some((r) => r.parked) ? t('gap.parked') : null,
+    ].filter(Boolean);
+
+    host.hidden = notes.length === 0;
+    host.innerHTML = notes.map((n) => `<li>${n}</li>`).join('');
   }
 
   /* ================================================================ list */
@@ -798,6 +898,29 @@
     });
   }
 
+  /**
+   * Stage owner, plus the sheet's assigned team when the two differ. A row where the
+   * process says SLA and the sheet says GSM is worth seeing; one where both say GSM is
+   * just the same word twice.
+   */
+  function ownerCell(row) {
+    const who = ownerNow(row);
+    const label = t(`owner.${who}`);
+    const team = row.team && row.team.toUpperCase() !== label.toUpperCase() ? row.team : null;
+    return `<span class="own ${who}" title="${escape(t('owner.why'))}">${escape(label)}</span>${
+      team ? `<span class="own-team" title="${escape(t('owner.assigned'))}">${escape(team)}</span>` : ''
+    }`;
+  }
+
+  /** The derived next step, kept short enough for a table cell; full text in the title. */
+  function nextCell(row) {
+    if (row.parked) return `<span class="faint">${escape(t(`parked.${row.parked}`))}</span>`;
+    const action = nextAction(row);
+    if (!action) return `<span class="faint">${escape(t('act.done'))}</span>`;
+    const full = [action.text, action.caveat, action.gate].filter(Boolean).join(' · ');
+    return `<span class="nextstep" title="${escape(full)}">${escape(action.text)}</span>`;
+  }
+
   function rowHtml(row) {
     const statusClass = STATUS_CLASS[row.status] ?? 'contact';
     const track = row.stages
@@ -812,7 +935,9 @@
     return `
       <tr class="row ${state.open.has(row.no) ? 'open' : ''}" data-no="${row.no}">
         <td class="num">${escape(row.no)}</td>
-        <td class="partner">${escape(row.project)}${row.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}</td>
+        <td class="partner">${escape(row.project)}${row.impact === 'High' ? '<span class="flag">HIGH</span>' : ''}${
+          row.blocker ? `<span class="blocked" title="${escape(row.blocker)}">${escape(t('label.blocked'))}</span>` : ''
+        }</td>
         <td class="dim">${escape(row.category)}</td>
         <td><span class="chip ${statusClass}">${escape(row.status)}</span></td>
         <td>
@@ -822,10 +947,12 @@
           </span>
         </td>
         <td class="track-cell"><span class="track">${track}</span></td>
+        <td class="c-next">${nextCell(row)}</td>
+        <td class="c-owner">${ownerCell(row)}</td>
         <td>${row.pic ? escape(row.pic) : '<span class="faint">—</span>'}</td>
-        <td class="c-team dim">${row.team ? escape(row.team) : '—'}</td>
         <td><span class="load ${row.devLoad}"><span class="dot"></span>${escape(row.devLoadLabel)}</span></td>
         <td class="c-switching dim">${row.switching ? escape(row.switching) : '—'}</td>
+        <td class="c-target">${targetCell(row)}</td>
         <td class="dim">${fmtDate(row.lastActivity)}</td>
         <td class="num"><span class="days ${daysClass(row)}">${escape(daysText(row))}</span></td>
       </tr>`;
@@ -843,18 +970,27 @@
       )
       .join('');
 
+    const ts = targetState(row);
     const notes = [
       row.currentStage ? t('detail.furthest', { stage: escape(row.currentStage) }) : t('detail.nostage'),
+      t('detail.owner', { who: t(`owner.${ownerNow(row)}`) }),
+      (() => {
+        const a = nextAction(row);
+        return a ? t('detail.next', { text: [a.text, a.caveat, a.gate].filter(Boolean).map(escape).join(' · ') }) : null;
+      })(),
+      ts ? t('detail.target', { date: fmtDate(ts.date), drift: ts.text }) : null,
       row.delayNote ? t('detail.note', { note: escape(row.delayNote) }) : null,
       row.consistent === false ? t('detail.consistency', { note: escape(row.consistency ?? '') }) : null,
       row.lastActivity ? t('detail.last', { date: fmtDate(row.lastActivity), n: row.days }) : t('detail.never'),
+      row.blocker ? t('detail.blocker', { note: escape(row.blocker) }) : null,
+      row.note ? t('detail.free', { note: escape(row.note) }) : null,
     ]
       .filter(Boolean)
       .join(' &nbsp;·&nbsp; ');
 
     return `
       <tr class="detail" data-detail="${row.no}">
-        <td colspan="12">
+        <td colspan="14">
           <div class="detail-inner">
             <div class="detail-title">${t('detail.title', { name: escape(row.project) })}</div>
             <div class="stagelist">${stages}</div>

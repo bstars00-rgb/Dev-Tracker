@@ -6,7 +6,7 @@
     <title>OHMY Integration Tracker</title>
     <meta name="description" content="Read-only view of the OHMYHOTEL API integration pipeline." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📡</text></svg>" />
-    <link rel="stylesheet" href="styles.css?v=20260821T1006" />
+    <link rel="stylesheet" href="styles.css?v=20260821T2349" />
   </head>
   <body>
     <header class="topbar">
@@ -114,6 +114,17 @@
             <div class="breakdown" id="by-aging"></div>
           </section>
         </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 data-i18n="cov.title"></h2>
+              <p data-i18n="cov.desc"></p>
+            </div>
+          </div>
+          <div class="breakdown" id="by-coverage"></div>
+          <ul class="gaps" id="data-gaps" hidden></ul>
+        </section>
       </section>
 
       <!-- ============================================================ LIST -->
@@ -146,10 +157,12 @@
                 <th scope="col" class="sortable" data-sort="status" data-i18n="th.status"></th>
                 <th scope="col" class="sortable" data-sort="progress" data-i18n="th.progress"></th>
                 <th scope="col" class="track-col" data-i18n="th.track"></th>
+                <th scope="col" class="c-next" data-i18n="th.next"></th>
+                <th scope="col" class="c-owner sortable" data-sort="team" data-i18n="th.owner"></th>
                 <th scope="col" class="sortable" data-sort="pic" data-i18n="th.pic"></th>
-                <th scope="col" class="c-team sortable" data-sort="team" data-i18n="th.team"></th>
                 <th scope="col" class="sortable" data-sort="devLoad" data-i18n="th.load"></th>
                 <th scope="col" class="c-switching sortable" data-sort="switching" data-i18n="th.switching"></th>
+                <th scope="col" class="c-target sortable" data-sort="target" data-i18n="th.target"></th>
                 <th scope="col" class="sortable" data-sort="lastActivity" data-i18n="th.last"></th>
                 <th scope="col" class="num sortable" data-sort="days" data-i18n="th.days"></th>
               </tr>
@@ -166,8 +179,8 @@
       </footer>
     </main>
 
-    <script src="data/tracker.js?v=20260821T1006"></script>
-    <script src="i18n.js?v=20260821T1006"></script>
-    <script src="app.js?v=20260821T1006"></script>
+    <script src="data/tracker.js?v=20260821T2349"></script>
+    <script src="i18n.js?v=20260821T2349"></script>
+    <script src="app.js?v=20260821T2349"></script>
   </body>
 </html>

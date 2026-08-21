@@ -486,11 +486,16 @@ kbd {
 }
 
 /* ---------------------------------------------------------------- narrow */
+@media (max-width: 1200px) {
+  /* Switching is blank on all but seven rows, so it is the first to go. Owner now and
+     the next step stay: they are the reason the list is open during a weekly review. */
+  th.c-switching, td.c-switching { display: none; }
+}
+
 @media (max-width: 900px) {
   .tablewrap { max-height: none; }
-  .track-col, td.track-cell,
-  th[data-sort='switching'], td.c-switching,
-  th[data-sort='team'], td.c-team { display: none; }
+  .track-col, td.track-cell { display: none; }
+  .c-next { max-width: 200px; }
 }
 
 @media print {
@@ -725,3 +730,76 @@ kbd {
   border-color: var(--text);
   color: var(--bg);
 }
+
+/* ---------------------------------------------------------- next step / owner / target
+   Three columns the team asked for in the weekly review: what happens next, who holds it
+   at this stage, and when it is meant to be live. */
+.c-next { max-width: 300px; min-width: 200px; }
+/* Two lines, because most of these steps are a sentence and one line cut every single
+   one of them mid-word. The untruncated text is in the title and the expanded row. */
+.nextstep {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.c-owner { white-space: nowrap; }
+.own {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.own.dev { color: #fff; background: var(--danger); }
+.own.switching { color: var(--nda); background: var(--nda-bg); box-shadow: inset 0 0 0 1px currentColor; }
+.own.partner { color: var(--dev); background: var(--dev-bg); box-shadow: inset 0 0 0 1px currentColor; }
+.own.gsm, .own.sla { color: var(--faint); background: var(--contact-bg); }
+.own.done { color: var(--live); background: var(--live-bg); }
+.own.hold, .own.dropped { color: var(--faint); background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
+.own-team { margin-left: 6px; font-size: 11px; color: var(--faint); }
+.own-team::before { content: ' b7'; margin-right: 6px; }
+
+.c-target { white-space: nowrap; }
+.target {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.target.late { color: #fff; background: var(--danger); }
+.target.ahead { color: var(--live); background: var(--live-bg); }
+.target.shipped-late { color: var(--nda); background: var(--nda-bg); }
+.target.shipped-ontime { color: var(--live); background: var(--live-bg); }
+.target-date { display: block; font-size: 11px; color: var(--faint); }
+
+/* A row the sheet says is stuck, marked where the eye already is - on the name. */
+.blocked {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: #fff;
+  background: var(--danger);
+}
+
+/* Per-type stage coverage, and the honest note when a column the board wants is absent. */
+.cov-row { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.cov-row:last-child { border-bottom: 0; }
+.cov-name { flex: 1; font-size: 13px; }
+.cov-meter { width: 90px; height: 5px; border-radius: 999px; background: var(--contact-bg); overflow: hidden; }
+.cov-meter span { display: block; height: 100%; background: var(--live); }
+.cov-meter.empty span { background: var(--danger); }
+.cov-note { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.cov-row.blank .cov-name { color: var(--faint); }
+.gaps { margin: 12px 0 0; padding: 10px 12px; list-style: none; border-radius: 6px; background: var(--contact-bg); }
+.gaps li { position: relative; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--faint); }
+.gaps li::before { content: '!'; position: absolute; left: 2px; font-weight: 700; color: var(--warn); }
