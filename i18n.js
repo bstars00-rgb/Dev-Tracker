@@ -195,7 +195,7 @@ window.I18N = {
     /* ---- list ---- */
     'search.placeholder': '파트너, PIC, 단계 검색…   ( / )',
     'filter.status': '상태: 전체',
-    'filter.category': '카테고리: 전체',
+    'cat.all': '전체',
     'filter.pic': 'PIC: 전체',
     'filter.stage': '현재 단계: 전체',
     'filter.health': '활동: 전체',
@@ -426,7 +426,7 @@ window.I18N = {
 
     'search.placeholder': 'Search partner, PIC, stage…   ( / )',
     'filter.status': 'Status: all',
-    'filter.category': 'Category: all',
+    'cat.all': 'All',
     'filter.pic': 'PIC: all',
     'filter.stage': 'Current stage: all',
     'filter.health': 'Activity: all',

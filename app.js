@@ -703,7 +703,6 @@
     };
 
     fill('f-status', t('filter.status'), uniqueSorted('status').map((v) => [v, v]));
-    fill('f-category', t('filter.category'), uniqueSorted('category').map((v) => [v, v]));
     fill('f-pic', t('filter.pic'), uniqueSorted('pic').map((v) => [v, v]));
     fill(
       'f-stage',
@@ -724,24 +723,24 @@
     ]);
   }
 
-  function visibleRows() {
-    const q = state.q.trim().toLowerCase();
-
-    const filtered = ROWS.filter((row) => {
-      if (state.status && row.status !== state.status) return false;
-      if (state.category && row.category !== state.category) return false;
-      if (state.pic && row.pic !== state.pic) return false;
-      if (state.impact && row.impact !== state.impact) return false;
-      if (state.route && routeOf(row) !== state.route) return false;
-      if (state.load && row.devLoad !== state.load) return false;
-      if (state.klass && classOf(row) !== state.klass) return false;
-      if (state.consistency === 'bad' && row.consistent !== false) return false;
-      if (state.consistency === 'ok' && row.consistent === false) return false;
-      if (state.stageAt !== '' && row.progress !== Number(state.stageAt)) return false;
-      if (state.health) {
-        if (state.health === 'attention') {
+  /** The filter predicate, pulled out so the category tabs can count with it too. */
+  function applyFilters(rows, s) {
+    const q = s.q.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (s.status && row.status !== s.status) return false;
+      if (s.category && row.category !== s.category) return false;
+      if (s.pic && row.pic !== s.pic) return false;
+      if (s.impact && row.impact !== s.impact) return false;
+      if (s.route && routeOf(row) !== s.route) return false;
+      if (s.load && row.devLoad !== s.load) return false;
+      if (s.klass && classOf(row) !== s.klass) return false;
+      if (s.consistency === 'bad' && row.consistent !== false) return false;
+      if (s.consistency === 'ok' && row.consistent === false) return false;
+      if (s.stageAt !== '' && row.progress !== Number(s.stageAt)) return false;
+      if (s.health) {
+        if (s.health === 'attention') {
           if (!needsAttention(row)) return false;
-        } else if (row.health !== state.health) return false;
+        } else if (row.health !== s.health) return false;
       }
       if (q) {
         const hay = [row.project, row.category, row.status, row.pic, row.team, row.switching, row.currentStage]
@@ -751,6 +750,10 @@
       }
       return true;
     });
+  }
+
+  function visibleRows() {
+    const filtered = applyFilters(ROWS, state);
 
     const key = state.sort;
     const sign = state.dir === 'asc' ? 1 : -1;
@@ -839,10 +842,51 @@
       </tr>`;
   }
 
+  /**
+   * Category sub-tabs across the top of the list. Counts respect every other active
+   * filter but not the category itself, so switching tabs while a PIC filter is on
+   * shows how that person's work splits across categories instead of resetting to the
+   * whole portfolio.
+   */
+  const CATEGORY_TOTALS = ROWS.reduce((acc, r) => ((acc[r.category] = (acc[r.category] ?? 0) + 1), acc), {});
+  const totalPerCategory = (name) => CATEGORY_TOTALS[name] ?? 0;
+
+  function renderCategoryTabs() {
+    const withoutCategory = { ...state, category: '' };
+    const pool = applyFilters(ROWS, withoutCategory);
+
+    const counts = new Map();
+    for (const row of pool) counts.set(row.category, (counts.get(row.category) ?? 0) + 1);
+
+    // Every category the sheet contains stays visible even when a filter empties it, so
+    // a tab never disappears mid-session. Order is fixed by the total size of each
+    // category, not the filtered count, so the strip does not reshuffle under the cursor.
+    const categories = [...new Set(ROWS.map((r) => r.category))].sort(
+      (a, b) => totalPerCategory(b) - totalPerCategory(a) || a.localeCompare(b),
+    );
+
+    const tab = (value, label, n) => `
+      <button type="button" role="tab" data-cat="${escape(value)}" aria-selected="${state.category === value}"
+              ${n === 0 && value !== '' && state.category !== value ? 'disabled' : ''}>
+        ${escape(label)}<span class="sub-count">${n}</span>
+      </button>`;
+
+    $('cat-tabs').innerHTML =
+      tab('', t('cat.all'), pool.length) + categories.map((c) => tab(c, c, counts.get(c) ?? 0)).join('');
+  }
+
+  $('cat-tabs').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-cat]');
+    if (!button || button.disabled) return;
+    state.category = button.dataset.cat;
+    renderList();
+  });
+
   function renderList() {
     const rows = visibleRows();
 
     $('tbody').innerHTML = rows.map((row) => rowHtml(row) + (state.open.has(row.no) ? detailHtml(row) : '')).join('');
+    renderCategoryTabs();
     $('empty').hidden = rows.length > 0;
 
     const scope =
@@ -862,13 +906,12 @@
   function syncControls() {
     $('search').value = state.q;
     $('f-status').value = state.status;
-    $('f-category').value = state.category;
     $('f-pic').value = state.pic;
     $('f-stage').value = state.stageAt;
     $('f-class').value = state.klass;
     $('f-consistency').value = state.consistency;
     $('f-health').value = state.health;
-    for (const id of ['f-status', 'f-category', 'f-pic', 'f-stage', 'f-class', 'f-consistency', 'f-health']) {
+    for (const id of ['f-status', 'f-pic', 'f-stage', 'f-class', 'f-consistency', 'f-health']) {
       $(id).dataset.empty = $(id).value === '' ? 'true' : 'false';
     }
   }
@@ -922,7 +965,6 @@
 
   for (const [id, key] of [
     ['f-status', 'status'],
-    ['f-category', 'category'],
     ['f-pic', 'pic'],
     ['f-stage', 'stageAt'],
     ['f-class', 'klass'],
