@@ -801,10 +801,22 @@
     if (!host) return;
     const c = data.counts ?? {};
     const fallbacks = ROWS.filter((r) => r.targetSource === 'devdone').length;
+    const total = ROWS.length;
+
+    // A column that exists but is empty is not the same as a missing one, and it is the
+    // easier state to miss: the board stops complaining while still knowing nothing.
+    // Say which of the two it is.
+    const gap = (has, filled, missingKey, emptyKey, vars = {}) => {
+      if (!has) return t(missingKey, { ...vars, total });
+      return filled === 0 ? t(emptyKey, { total }) : null;
+    };
+
     const notes = [
-      !c.hasTarget ? t('gap.target', { n: fallbacks, total: ROWS.length }) : null,
-      !c.hasBlocker ? t('gap.blocker') : null,
-      !c.hasParkedFlag && !ROWS.some((r) => r.parked) ? t('gap.parked') : null,
+      gap(c.hasTarget, c.withTarget, 'gap.target', 'gap.target.empty', { n: fallbacks }),
+      gap(c.hasBlocker, c.withBlocker, 'gap.blocker', 'gap.blocker.empty'),
+      gap(c.hasParkedFlag, c.parked, 'gap.parked', 'gap.parked.empty'),
+      c.hasDevOwner && c.withDevOwner === 0 ? t('gap.devowner.empty', { total }) : null,
+      !c.hasDevOwner ? t('gap.devowner') : null,
     ].filter(Boolean);
 
     host.hidden = notes.length === 0;

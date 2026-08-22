@@ -411,6 +411,7 @@ const payload = {
     hasTarget: IDX.targetGoLive >= 0,
     hasBlocker: IDX.blocker >= 0,
     hasParkedFlag: IDX.parkedFlag >= 0,
+    hasDevOwner: IDX.devOwner >= 0,
     // How much of the funnel each partner type actually records. Comparing a Channel
     // API percentage against a CRS one is only fair if both are being tracked at all.
     stageCoverage: Object.fromEntries(
