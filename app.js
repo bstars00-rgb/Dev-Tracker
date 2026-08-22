@@ -84,11 +84,11 @@
     status: '',
     category: '',
     pic: '',
+    country: '',
     stageAt: '',
     health: '',
     impact: '',
     route: '',
-    load: '',
     klass: '',
     consistency: '',
     hideDone: false,
@@ -822,6 +822,7 @@
 
     fill('f-status', t('filter.status'), uniqueSorted('status').map((v) => [v, v]));
     fill('f-pic', t('filter.pic'), uniqueSorted('pic').map((v) => [v, v]));
+    fill('f-country', t('filter.country'), uniqueSorted('country').map((v) => [v, v]));
     fill(
       'f-stage',
       t('filter.stage'),
@@ -848,6 +849,7 @@
       if (s.status && row.status !== s.status) return false;
       if (s.category && row.category !== s.category) return false;
       if (s.pic && row.pic !== s.pic) return false;
+      if (s.country && row.country !== s.country) return false;
       if (s.impact && row.impact !== s.impact) return false;
       if (s.route && routeOf(row) !== s.route) return false;
       if (s.omh && !['direct', 'shared'].includes(row.route)) return false;
@@ -1117,11 +1119,12 @@
     $('search').value = state.q;
     $('f-status').value = state.status;
     $('f-pic').value = state.pic;
+    $('f-country').value = state.country;
     $('f-stage').value = state.stageAt;
     $('f-class').value = state.klass;
     $('f-consistency').value = state.consistency;
     $('f-health').value = state.health;
-    for (const id of ['f-status', 'f-pic', 'f-stage', 'f-class', 'f-consistency', 'f-health']) {
+    for (const id of ['f-status', 'f-pic', 'f-country', 'f-stage', 'f-class', 'f-consistency', 'f-health']) {
       $(id).dataset.empty = $(id).value === '' ? 'true' : 'false';
     }
   }
@@ -1176,6 +1179,7 @@
   for (const [id, key] of [
     ['f-status', 'status'],
     ['f-pic', 'pic'],
+    ['f-country', 'country'],
     ['f-stage', 'stageAt'],
     ['f-class', 'klass'],
     ['f-consistency', 'consistency'],
@@ -1211,7 +1215,7 @@
 
   $('reset').addEventListener('click', () => {
     Object.assign(state, {
-      q: '', status: '', category: '', pic: '', stageAt: '', health: '', impact: '', route: '', load: '', klass: '', consistency: '', hideDone: false,
+      q: '', status: '', category: '', pic: '', country: '', stageAt: '', health: '', impact: '', route: '', omh: '', klass: '', consistency: '', hideDone: false,
       sort: 'attention', dir: 'asc',
     });
     state.open.clear();
@@ -1221,16 +1225,18 @@
 
   $('export').addEventListener('click', () => {
     const header = [
-      'No', 'Project', 'Category', 'Status', 'Progress %', 'Current stage', 'Biz impact',
-      'PIC', 'Team', 'Dev load', 'Build route', 'Class', 'Switching', 'Last activity', 'Days since', 'Health', 'Consistency',
+      'No', 'Project', 'Category', 'Country', 'Status', 'Progress %', 'Current stage', 'Biz impact',
+      'PIC', 'Team', 'Dev owner', 'Build route', 'Class', 'Switching', 'Target go-live', 'Blocker',
+      'Last activity', 'Days since', 'Health', 'Consistency',
     ];
     const cell = (value) => {
       const text = String(value ?? '');
       return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
     };
     const lines = visibleRows().map((r) =>
-      [r.no, r.project, r.category, r.status, r.progress, r.currentStage ?? '', r.impact ?? '',
-       r.pic ?? '', r.team ?? '', r.devOwner ?? '', routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '', r.lastActivity ?? '',
+      [r.no, r.project, r.category, r.country ?? '', r.status, r.progress, r.currentStage ?? '', r.impact ?? '',
+       r.pic ?? '', r.team ?? '', r.devOwner ?? '', routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '',
+       r.target ?? '', r.blocker ?? '', r.lastActivity ?? '',
        r.days ?? '', r.health, r.consistency ?? ''].map(cell).join(','),
     );
     // BOM so Excel opens the UTF-8 partner names correctly.

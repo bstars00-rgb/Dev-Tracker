@@ -180,22 +180,156 @@ function salesMessage() {
 }
 
 /* ------------------------------------------------------------------ 3. leaders */
-// The shape of the problem and what needs deciding. No row-by-row listing - the two
-// worst cases and the counts carry it.
+/**
+ * The directors' room: 대표 · CSO · CTO and the line directors.
+ *
+ * They are not chasing partners, so a list of them is the wrong output. What this has
+ * to answer is which of the five business lines is actually running, which is stalled,
+ * and what the shape implies about where the next quarter's engineering goes.
+ *
+ * Live rows count here, unlike the other two messages. "Twenty-nine of our thirty live
+ * integrations are on one line" is the finding - it is invisible if you only look at
+ * what moved this week.
+ */
+
+/** Sheet category -> business line. Anything unmapped still shows, under its own name. */
+const LINES = [
+  { key: 'Channel API', label: '고객사 연동', gloss: '우리 재고를 파는 채널' },
+  { key: '3rd Party Hotel', label: '공급사 연동', gloss: '재고를 가져오는 소스' },
+  { key: 'Switching System', label: '스위칭 연동', gloss: '한 건이 파트너 다수를 여는 경로' },
+  { key: '3rd Party Activity', label: '액티비티 공급사', gloss: '' },
+  { key: 'CRS', label: 'CRS', gloss: '' },
+];
+/** Lines that bring inventory in, as opposed to selling it. */
+const SUPPLY = ['3rd Party Hotel', '3rd Party Activity', 'CRS'];
+
+function lineStats() {
+  const seen = new Set(LINES.map((l) => l.key));
+  const extra = [...new Set(data.rows.map((r) => r.category))]
+    .filter((c) => !seen.has(c))
+    .map((c) => ({ key: c, label: c, gloss: '' }));
+
+  return [...LINES, ...extra]
+    .map((l) => {
+      const rows = data.rows.filter((r) => r.category === l.key);
+      const live = rows.filter((r) => r.progress >= 100);
+      const inf = rows.filter((r) => r.progress > 0 && r.progress < 100);
+      return {
+        ...l,
+        rows,
+        n: rows.length,
+        live: live.length,
+        inflight: inf.length,
+        stalled: inf.filter((r) => r.days !== null && r.days >= STALE_DAYS).length,
+        idle: rows.length - live.length - inf.length,
+        omh: rows.filter((r) => ['direct', 'shared'].includes(r.route)).length,
+        conv: rows.length ? Math.round((live.length / rows.length) * 100) : 0,
+      };
+    })
+    .filter((l) => l.n > 0)
+    .sort((a, b) => b.n - a.n);
+}
+
+/** Partners that appear on more than one line - selling to us and buying from us. */
+function twoWay() {
+  const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const m = new Map();
+  for (const r of data.rows) {
+    const k = norm(r.project);
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  }
+  return [...m.values()]
+    .filter((v) => v.length > 1 && new Set(v.map((r) => r.category)).size > 1)
+    .sort((a, b) => Math.max(...b.map((r) => r.progress)) - Math.max(...a.map((r) => r.progress)));
+}
+
 function leadersMessage() {
-  let b = title(`&#128225; Integration Tracker (${shortDate(stamp)})`);
+  const lines = lineStats();
+  const totalLive = data.rows.filter((r) => r.progress >= 100).length;
+  const idle = data.rows.filter((r) => r.progress === 0).length;
 
-  b += `<div ${line}>진행중 <b>${inFlight.length}건</b> · 최근 움직임 ${moving.length}건 · ` +
-    `${STALE_DAYS}일+ 정체 ${red(`<b>${stalled.length}건</b>`)}</div>`;
+  let b = title(`&#128225; Integration Tracker &mdash; 라인별 현황 (${shortDate(stamp)})`);
+  b += `<div ${line}>전체 <b>${data.rows.length}건</b> · 라이브 <b>${totalLive}</b> · ` +
+    `진행중 <b>${inFlight.length}</b> (${STALE_DAYS}일+ 정체 ${red(`${stalled.length}`)}) · 미착수 <b>${idle}</b></div>`;
 
-  const owed = devWork.length;
-  b += `<div ${line}>이 중 OMH 개발이 붙어야 하는 건 <b>${owed}건</b>, ` +
-    `파트너 구현 대기 <b>${partnerWait.length}건</b>입니다.</div>`;
+  /* ---- the five lines, side by side ---- */
+  const th = `style="${FONT};font-size:12px;color:#666;font-weight:600;text-align:right;padding:4px 8px;border-bottom:1px solid #ddd"`;
+  const td = `style="${FONT};font-size:14px;text-align:right;padding:5px 8px;border-bottom:1px solid #eee"`;
+  const tdL = `style="${FONT};font-size:14px;text-align:left;padding:5px 8px;border-bottom:1px solid #eee"`;
 
-  // Sorting the stall list purely by age puts two long-dead 20% prospects at the top,
-  // which is the least useful thing a leader can be handed. What costs money is an
-  // integration that got most of the way and then stopped, so that leads.
-  const advanced = stalled.filter((r) => r.progress >= 50).sort((a, b) => b.progress - a.progress);
+  b += rule('라인별');
+  b += `<table style="border-collapse:collapse;margin:2px 0 0 0">
+    <tr>
+      <th ${th} style="text-align:left">라인</th><th ${th}>총</th><th ${th}>라이브</th>
+      <th ${th}>진행중</th><th ${th}>미착수</th><th ${th}>전환율</th><th ${th}>OMH 구현</th>
+    </tr>`;
+  for (const l of lines) {
+    const stall = l.stalled ? ` ${red(`(정체 ${l.stalled})`)}` : '';
+    const conv = l.conv === 0 ? red('0%') : `${l.conv}%`;
+    b += `<tr>
+      <td ${tdL}><b>${esc(l.label)}</b>${l.gloss ? ` ${dim(esc(l.gloss))}` : ''}</td>
+      <td ${td}>${l.n}</td><td ${td}><b>${l.live}</b></td>
+      <td ${td}>${l.inflight}${stall}</td><td ${td}>${l.idle}</td>
+      <td ${td}>${conv}</td><td ${td}>${l.omh}</td>
+    </tr>`;
+  }
+  b += '</table>';
+
+  /* ---- what the shape says ---- */
+  const top = lines.slice().sort((a, b2) => b2.live - a.live)[0];
+  if (top && totalLive > 0 && top.live / totalLive >= 0.8) {
+    const rest = totalLive - top.live;
+    b += rule('매출이 한 라인에 실려 있습니다');
+    b += `<div ${line}>라이브 ${totalLive}건 중 <b>${top.live}건이 ${esc(top.label)}</b>입니다. ` +
+      `나머지 ${lines.length - 1}개 라인을 다 합쳐서 ${rest}건.</div>`;
+    b += `<div ${line}>파는 창구는 ${top.live}개, 재고를 가져오는 소스는 ` +
+      `${lines.filter((l) => SUPPLY.includes(l.key)).reduce((s, l) => s + l.live, 0)}개입니다. ` +
+      `채널을 더 붙일수록 같은 재고를 더 많은 창구에 나눠 파는 구조가 됩니다.</div>`;
+  }
+
+  const sw = lines.find((l) => l.key === 'Switching System');
+  if (sw && sw.live === 0) {
+    // A switching platform carries many partners behind one integration, so rows already
+    // routed through one are the concrete prize for opening it.
+    const behind = data.rows.filter((r) => r.route === 'switching' && r.progress < 100);
+    const highIdle = sw.rows.filter((r) => r.progress === 0 && r.impact === 'High').map((r) => r.project);
+    b += rule('스위칭 라이브 0건 — 미실현 레버리지');
+    b += `<div ${line}>스위칭 1건이 열리면 그 뒤의 파트너들이 개별 연동 없이 들어옵니다. ` +
+      `현재 ${sw.n}건 중 라이브 ${red('0')}, 진행중 ${sw.inflight}.</div>`;
+    if (behind.length) {
+      b += `<div ${line}>이미 "스위칭 경유"로 분류된 건이 <b>${behind.length}건</b> — ` +
+        `${behind.map((r) => esc(r.project)).join(' · ')}. 스위칭이 열리면 개별 개발 없이 해결됩니다.</div>`;
+    }
+    if (highIdle.length) b += `<div ${line}>미착수 High: <b>${highIdle.map(esc).join(' · ')}</b>. 착수 여부가 물량 확대의 분기점입니다.</div>`;
+  }
+
+  const supply = lines.filter((l) => SUPPLY.includes(l.key));
+  const sN = supply.reduce((s, l) => s + l.n, 0);
+  const sOmh = supply.reduce((s, l) => s + l.omh, 0);
+  const sLive = supply.reduce((s, l) => s + l.live, 0);
+  if (sN && sOmh / sN >= 0.7) {
+    b += rule('공급 라인은 열면 전부 우리 개발입니다');
+    b += `<div ${line}>공급 ${sN}건 중 <b>${sOmh}건이 OMH 직접 구현</b>입니다. ` +
+      `고객사 연동은 상대가 우리 API에 붙지만, 공급사는 우리가 상대 API에 붙어야 하기 때문입니다.</div>`;
+    b += `<div ${line}>지금 라이브 ${sLive}건. 이 라인을 여는 결정은 ` +
+      `<b>개발 인력 확보 결정</b>과 같습니다 — 현재 개발이 실제로 붙어 있는 건은 ${devWork.length}건뿐입니다.</div>`;
+  }
+
+  const both = twoWay();
+  if (both.length) {
+    b += rule('사고팔기를 함께 하는 상대');
+    b += `<div ${line}>${both.length}곳이 두 라인에 걸쳐 있습니다 — ` +
+      `${both.map((v) => `<b>${esc(v[0].project)}</b> ${dim(v.map((r) => `${r.progress}%`).join('/'))}`).join(' · ')}</div>`;
+    const cold = both.filter((v) => v.every((r) => r.progress === 0));
+    if (cold.length) {
+      b += `<div ${line}>이 중 ${cold.map((v) => esc(v[0].project)).join(' · ')}는 양쪽 다 미착수입니다. ` +
+        `한 번의 협상으로 두 라인이 열리는 건이라 개별 건보다 우선순위가 높습니다.</div>`;
+    }
+  }
+
+  /* ---- what to decide ---- */
+  const advanced = stalled.filter((r) => r.progress >= 50).sort((a, b2) => b2.progress - a.progress);
   if (advanced.length) {
     b += rule('판단 필요 — 절반 넘게 진행됐는데 멈춘 건');
     for (const r of advanced) {
@@ -204,43 +338,30 @@ function leadersMessage() {
         : r.watch === 'omhsupport' ? 'OMH 지원'
         : r.watch === 'partnerbuild' ? '파트너 구현 대기'
         : '영업 단계';
-      b += `<div ${line}><b>${esc(r.project)}</b> &nbsp;${r.progress}% &nbsp;${red(
-        `${r.days}일`,
-      )} &nbsp;${dim(`${who} · ${r.pic || '-'}`)}</div>`;
+      b += `<div ${line}><b>${esc(r.project)}</b> &nbsp;${r.progress}% &nbsp;${red(`${r.days}일`)} ` +
+        `&nbsp;${dim(`${who} · ${r.pic || '-'}`)}</div>`;
     }
-    b += `<div ${line}>신규 착수보다 이쪽을 푸는 게 우선이라고 봅니다.</div>`;
   }
 
-  // The other kind of stall: never got past the NDA. Not urgent, but it inflates the
-  // in-flight number until someone decides they are dead.
-  const nda = stalled.filter((r) => r.progress <= 30);
-  if (nda.length) {
-    b += rule('오래 방치 — NDA·계약 단계');
-    const oldest = nda[0];
-    b += `<div ${line}>${nda.length}건, 최장 ${red(`${oldest.days}일`)} (${esc(oldest.project)}). ` +
-      `Hold/Drop 정리가 없으면 "진행중 ${inFlight.length}건"이 실제보다 커 보입니다.</div>`;
+  // Stalls on a line that never moves do not show up as stalls. Say so, or "정체 0" reads
+  // as health when it means the opposite.
+  const frozen = lines.filter((l) => l.inflight === 0 && l.n > 0);
+  if (frozen.length) {
+    b += `<div ${line}>${frozen.map((l) => esc(l.label)).join(' · ')}는 진행중 0건이라 정체로도 잡히지 않습니다 — ` +
+      `${dim('움직이지 않으면 알럿도 울리지 않습니다')}.</div>`;
   }
 
-  const byOwner = byPic(stalled);
-  if (byOwner.length) {
-    b += rule('담당별 정체 건수');
-    b += `<div ${line}>${byOwner.map(([pic, rows]) => `${esc(pic)} ${rows.length}건`).join(' · ')}</div>`;
-  }
-
-  // The board can only answer "is this late?" once someone fills the target dates in.
   const gaps = [];
   if (data.counts?.hasTarget && (data.counts.withTarget ?? 0) === 0) gaps.push('목표 오픈일');
-  if (data.counts?.hasDevOwner && (data.counts.withDevOwner ?? 0) === 0) gaps.push('개발 주체');
   if (data.counts?.hasBlocker && (data.counts.withBlocker ?? 0) === 0) gaps.push('블로커');
-  if (gaps.length) {
-    b += rule('데이터 공백');
-    b += `<div ${line}>${gaps.join(' · ')} 컬럼이 비어 있어 지연 여부와 담당 구분을 ` +
-      `추정으로만 표시하고 있습니다.</div>`;
+  const noImpact = data.rows.length - (data.counts?.withImpact ?? 0);
+  if (gaps.length || noImpact) {
+    b += rule('판단 근거의 공백');
+    if (gaps.length) b += `<div ${line}>${gaps.join(' · ')} 컬럼이 비어 있어 지연 여부와 정체 사유를 표시할 수 없습니다.</div>`;
+    if (noImpact) b += `<div ${line}>Biz Impact 미입력 <b>${noImpact}/${data.rows.length}건</b> — 우선순위 근거가 절반입니다.</div>`;
   }
 
-  b += foot(`라이브 ${data.rows.filter((r) => r.progress >= 100).length}건 · 미착수 ${
-    data.rows.filter((r) => r.progress === 0).length
-  }건 제외 · 매주 자동 생성`);
+  b += foot(`매주 자동 생성 · 정체 기준 ${STALE_DAYS}일 · 라인 구분은 시트 Category 기준`);
   return wrap(b);
 }
 
