@@ -194,11 +194,11 @@ function salesMessage() {
 
 /** Sheet category -> business line. Anything unmapped still shows, under its own name. */
 const LINES = [
-  { key: 'Channel API', label: '고객사 연동', gloss: '우리 재고를 파는 채널' },
-  { key: '3rd Party Hotel', label: '공급사 연동', gloss: '재고를 가져오는 소스' },
-  { key: 'Switching System', label: '스위칭 연동', gloss: '한 건이 파트너 다수를 여는 경로' },
-  { key: '3rd Party Activity', label: '액티비티 공급사', gloss: '' },
-  { key: 'CRS', label: 'CRS', gloss: '' },
+  { key: 'Channel API', label: '고객사 연동' },
+  { key: '3rd Party Hotel', label: '공급사 연동' },
+  { key: 'Switching System', label: '스위칭 연동' },
+  { key: '3rd Party Activity', label: '액티비티 공급사' },
+  { key: 'CRS', label: 'CRS' },
 ];
 /** Lines that bring inventory in, as opposed to selling it. */
 const SUPPLY = ['3rd Party Hotel', '3rd Party Activity', 'CRS'];
@@ -207,7 +207,7 @@ function lineStats() {
   const seen = new Set(LINES.map((l) => l.key));
   const extra = [...new Set(data.rows.map((r) => r.category))]
     .filter((c) => !seen.has(c))
-    .map((c) => ({ key: c, label: c, gloss: '' }));
+    .map((c) => ({ key: c, label: c }));
 
   return [...LINES, ...extra]
     .map((l) => {
@@ -268,7 +268,7 @@ function leadersMessage() {
     const stall = l.stalled ? ` ${red(`(정체 ${l.stalled})`)}` : '';
     const conv = l.conv === 0 ? red('0%') : `${l.conv}%`;
     b += `<tr>
-      <td ${tdL}><b>${esc(l.label)}</b>${l.gloss ? ` ${dim(esc(l.gloss))}` : ''}</td>
+      <td ${tdL}><b>${esc(l.label)}</b></td>
       <td ${td}>${l.n}</td><td ${td}><b>${l.live}</b></td>
       <td ${td}>${l.inflight}${stall}</td><td ${td}>${l.idle}</td>
       <td ${td}>${conv}</td><td ${td}>${l.omh}</td>
