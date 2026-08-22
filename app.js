@@ -163,14 +163,9 @@
    *  - otherwise                     -> the partner builds against our API
    * "OHMY Dev Load" in the sheet measures OUR effort, which is what makes this readable.
    */
-  function routeOf(row) {
-    // The sheet's own Dev Owner column wins when it is filled in; the load/switching
-    // heuristic is only the fallback for rows that leave it blank.
-    if (row.switching) return 'switching';
-    if (row.devOwner) return /^OHMY$/i.test(row.devOwner.trim()) ? 'direct' : 'partner';
-    if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
-    return 'partner';
-  }
+  // route and watch are worked out in scripts/build.mjs and shipped on every row, so
+  // the page and the Teams messages cannot disagree about who owns what.
+  const routeOf = (row) => row.route;
 
   /**
    * Next step per stage, taken from the internal 9-phase API integration process.
@@ -258,27 +253,7 @@
    * nothing. This says what the developer actually wants to know: is this on me, do I
    * have to review someone else's work, am I on call, or is it not mine yet.
    */
-  function watchLevel(row) {
-    const route = routeOf(row);
-
-    // Stages where OHMY engineering owes a deliverable whoever writes the client code:
-    // the DEV key (40/45), the certification pass judgement (60), the live key (70/75)
-    // and launch monitoring (80/90).
-    if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) {
-      return route === 'direct' ? 'omhbuild' : 'omhsupport';
-    }
-
-    // The build itself. Here the route decides who is actually writing code.
-    if (row.progress === 50) {
-      if (route === 'direct') return 'omhbuild';
-      return route === 'switching' ? 'switchreview' : 'partnerbuild';
-    }
-
-    // Still commercial. Flag the ones that will land hard on engineering later, so a
-    // full-effort or high-impact partner is not a surprise at kickoff.
-    if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
-    return 'sales';
-  }
+  const watchLevel = (row) => row.watch;
 
   const WATCH_ORDER = { omhbuild: 0, omhsupport: 1, switchreview: 2, partnerbuild: 3, heads: 4, sales: 5 };
   /** Levels where OHMY engineering itself has something to do. */

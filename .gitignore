@@ -5,3 +5,4 @@ node_modules
 
 # data/tracker.js and data/tracker.json ARE committed on purpose —
 # that is what makes index.html work by just opening it.
+output/

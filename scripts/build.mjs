@@ -174,6 +174,40 @@ function parseSwitching(column, devOwner) {
   return hit ? (hit.toLowerCase() === 'shiji' ? 'SHIJI' : hit) : null;
 }
 
+/**
+ * Which side is actually writing the client code.
+ *
+ * Computed here rather than in the page, because the board is no longer the only reader
+ * - the Teams messages need the same answer, and the two drifted apart twice already
+ * when each worked it out for itself.
+ */
+function routeOf(row) {
+  if (row.switching) return 'switching';
+  if (row.devOwner) return /^OHMY$/i.test(row.devOwner.trim()) ? 'direct' : 'partner';
+  if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
+  return 'partner';
+}
+
+/**
+ * Whose engineering is on the hook, and how hard.
+ *
+ * Credential work (DEV key at 40/45, cert pass at 60, live key at 70/75) and launch
+ * monitoring (80/90) are OHMY engineering whoever writes the client code - only the
+ * build itself at 50 follows the route.
+ */
+function watchOf(row) {
+  const route = routeOf(row);
+  if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) {
+    return route === 'direct' ? 'omhbuild' : 'omhsupport';
+  }
+  if (row.progress === 50) {
+    if (route === 'direct') return 'omhbuild';
+    return route === 'switching' ? 'switchreview' : 'partnerbuild';
+  }
+  if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
+  return 'sales';
+}
+
 function daysBetween(isoDate, today) {
   if (!isoDate) return null;
   const then = Date.parse(`${isoDate}T00:00:00Z`);
@@ -345,7 +379,7 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
   const direction = parseDirection(at(raw, 'direction'));
   const devOwner = clean(at(raw, 'devOwner'));
 
-  rows.push({
+  const draft = {
     rank: RANK[health],
     no: at(raw, 'no') ?? rows.length + 1,
     project,
@@ -382,7 +416,11 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
     currentStage: stageLabelOf(at(raw, 'currentStage')) ?? (reached.length ? reached[reached.length - 1].label : null),
     nextGate: stageLabelOf(at(raw, 'nextGate')),
     stages,
-  });
+  };
+
+  draft.route = routeOf(draft);
+  draft.watch = watchOf(draft);
+  rows.push(draft);
 }
 
 const stats = (key) =>
