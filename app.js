@@ -271,7 +271,10 @@
 
   function classOf(row) {
     const bigImpact = row.impact === 'High';
-    const bigEffort = row.devLoad === 'full' || row.devLoad === 'half';
+    // "OHMY writes it" is the effort axis now. The sheet dropped OHMY Dev Load because
+    // Dev Owner says the same thing: work we build costs us, work a partner builds does
+    // not. Coarser than Full/Half/Minimal was, and sourced from a column people fill.
+    const bigEffort = ['direct', 'shared'].includes(row.route);
     if (!bigEffort) return bigImpact ? 'quickwin' : 'fillin';
     return bigImpact ? 'major' : 'justify';
   }
@@ -304,7 +307,7 @@
     const devQueue = ROWS.filter((r) => r.progress >= 40 && r.progress < 50);
     const devWip = ROWS.filter((r) => r.progress >= 50 && r.progress < 80);
     const switching = ROWS.filter((r) => r.switching);
-    const fullLoad = ROWS.filter((r) => r.devLoad === 'full');
+    const omhBuilds = ROWS.filter((r) => ['direct', 'shared'].includes(r.route));
 
     const routeNote = (rows) =>
       t('card.route.note', {
@@ -404,17 +407,17 @@
       },
       {
         label: t('card.devfull'),
-        value: fullLoad.length,
+        value: omhBuilds.length,
         tone: 'info',
-        aux: t('card.share', { n: pct(fullLoad.length, total) }),
+        aux: t('card.share', { n: pct(omhBuilds.length, total) }),
         segments: [
-          { key: 'rest', n: fullLoad.filter((r) => r.progress > 0 && r.progress < 100).length, label: t('card.seg.inflight') },
-          { key: 'live', n: fullLoad.filter((r) => r.progress >= 100).length, label: t('card.seg.live') },
-          { key: 'idle2', n: fullLoad.filter((r) => r.progress === 0).length, label: t('card.seg.contact') },
-          { key: 'idle', n: total - fullLoad.length, label: '\u2014' },
+          { key: 'rest', n: omhBuilds.filter((r) => r.progress > 0 && r.progress < 100).length, label: t('card.seg.inflight') },
+          { key: 'live', n: omhBuilds.filter((r) => r.progress >= 100).length, label: t('card.seg.live') },
+          { key: 'idle2', n: omhBuilds.filter((r) => r.progress === 0).length, label: t('card.seg.contact') },
+          { key: 'idle', n: total - omhBuilds.length, label: '\u2014' },
         ],
-        note: t('card.devfull.note', { n: fullLoad.filter((r) => r.progress > 0 && r.progress < 100).length }),
-        filters: { load: 'full' },
+        note: t('card.devfull.note', { n: omhBuilds.filter((r) => r.progress > 0 && r.progress < 100).length }),
+        filters: { omh: '1' },
       },
       {
         label: t('card.mismatch'),
@@ -720,13 +723,7 @@
         </button>`;
     }
 
-    // Effort is one of the two axes. Without the column every row falls into the
-    // low-effort half, which is not a result - it is a blank presented as one.
-    const noEffort = !(data.counts?.hasDevLoad ?? true);
-    $('matrix').classList.toggle('no-effort', noEffort);
-    $('matrix-note').textContent = noEffort
-      ? t('matrix.noeffort')
-      : t('matrix.unknown', { n: ROWS.filter((r) => !r.impact).length });
+    $('matrix-note').textContent = t('matrix.unknown', { n: ROWS.filter((r) => !r.impact).length });
 
     $('matrix').onclick = (event) => {
       const button = event.target.closest('[data-class]');
@@ -803,7 +800,6 @@
       gap(c.hasParkedFlag, c.parked, 'gap.parked', 'gap.parked.empty'),
       c.hasDevOwner && c.withDevOwner === 0 ? t('gap.devowner.empty', { total }) : null,
       !c.hasDevOwner ? t('gap.devowner') : null,
-      !c.hasDevLoad ? t('gap.devload') : null,
     ].filter(Boolean);
 
     host.hidden = notes.length === 0;
@@ -854,7 +850,7 @@
       if (s.pic && row.pic !== s.pic) return false;
       if (s.impact && row.impact !== s.impact) return false;
       if (s.route && routeOf(row) !== s.route) return false;
-      if (s.load && row.devLoad !== s.load) return false;
+      if (s.omh && !['direct', 'shared'].includes(row.route)) return false;
       if (s.klass && classOf(row) !== s.klass) return false;
       if (s.consistency === 'bad' && row.consistent !== false) return false;
       if (s.consistency === 'ok' && row.consistent === false) return false;
@@ -950,9 +946,7 @@
         <td class="c-owner">${ownerCell(row)}</td>
         <td>${row.pic ? escape(row.pic) : '<span class="faint">—</span>'}</td>
         <td>${
-          data.counts?.hasDevLoad
-            ? `<span class="load ${row.devLoad}"><span class="dot"></span>${escape(row.devLoadLabel)}</span>`
-            : row.devOwner
+          row.devOwner
             ? `<span class="own ${routeOf(row)}">${escape(row.devOwner)}</span>`
             : '<span class="faint">—</span>'
         }</td>
@@ -1083,16 +1077,6 @@
     state.category = button.dataset.cat;
     renderList();
   });
-
-  // The workbook replaced OHMY Dev Load with Dev Owner. Relabel the column to match
-  // what it now holds, rather than heading a column of owners "Dev load".
-  (() => {
-    const th = document.querySelector('th[data-sort="devLoad"]');
-    if (!th) return;
-    const key = data.counts?.hasDevLoad ? 'th.load' : 'th.devowner';
-    th.dataset.i18n = key;
-    th.dataset.sort = data.counts?.hasDevLoad ? 'devLoad' : 'devOwner';
-  })();
 
   function renderList() {
     const rows = visibleRows();
@@ -1246,7 +1230,7 @@
     };
     const lines = visibleRows().map((r) =>
       [r.no, r.project, r.category, r.status, r.progress, r.currentStage ?? '', r.impact ?? '',
-       r.pic ?? '', r.team ?? '', r.devLoadLabel, routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '', r.lastActivity ?? '',
+       r.pic ?? '', r.team ?? '', r.devOwner ?? '', routeOf(r), t(`class.${classOf(r)}`), r.switching ?? '', r.lastActivity ?? '',
        r.days ?? '', r.health, r.consistency ?? ''].map(cell).join(','),
     );
     // BOM so Excel opens the UTF-8 partner names correctly.

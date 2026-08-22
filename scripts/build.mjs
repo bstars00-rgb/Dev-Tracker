@@ -76,7 +76,6 @@ const COLUMNS = {
   country: ['Country'],
   direction: ['연동 방향 (API Direction)', 'API Direction', '연동 방향'],
   impact: ['Biz Impact'],
-  devLoad: ['OHMY 개발 부하', 'OHMY Dev Load', 'Dev Load', '개발 부하'],
   devOwner: ['개발 주체 (Dev Owner)', 'Dev Owner', '개발 주체'],
   switching: ['Switching'],
   team: ['담당팀', 'Handling Team'],
@@ -132,16 +131,6 @@ function clean(value) {
   return text === '' || text === '??' || text === '-' ? null : text;
 }
 
-/** "🔴 Full (100%)" -> { level: 'full', label: 'Full (100%)' } */
-function parseDevLoad(value) {
-  const text = clean(value);
-  if (!text) return { level: 'none', label: '—' };
-  const label = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
-  if (/full/i.test(text)) return { level: 'full', label };
-  if (/half/i.test(text)) return { level: 'half', label };
-  if (/minimal/i.test(text)) return { level: 'minimal', label };
-  return { level: 'none', label: label || '—' };
-}
 
 /** "→ OMH API 제공 (…)" -> 'outbound' (partner calls us) / "← 고객사 API 연동" -> 'inbound'. */
 function parseDirection(value) {
@@ -194,7 +183,8 @@ function routeOf(row) {
     if (omh) return 'direct';
     return 'partner';
   }
-  if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
+  // No Dev Owner on the row: assume the partner builds it, which is what 59 of 62
+  // named owners say. Only one row is in this state.
   return 'partner';
 }
 
@@ -215,7 +205,7 @@ function watchOf(row) {
     if (route === 'direct' || route === 'shared') return 'omhbuild';
     return route === 'switching' ? 'switchreview' : 'partnerbuild';
   }
-  if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
+  if (route === 'direct' || route === 'shared' || row.impact === 'High') return 'heads';
   return 'sales';
 }
 
@@ -386,7 +376,6 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
   const targetDrift = target
     ? daysBetween(target, liveDate ? Date.parse(`${liveDate}T00:00:00Z`) : today)
     : null;
-  const devLoad = parseDevLoad(at(raw, 'devLoad'));
   const direction = parseDirection(at(raw, 'direction'));
   const devOwner = clean(at(raw, 'devOwner'));
 
@@ -398,8 +387,6 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
     category: clean(at(raw, 'category')) ?? 'Uncategorised',
     country: clean(at(raw, 'country')),
     impact: clean(at(raw, 'impact')),
-    devLoad: devLoad.level,
-    devLoadLabel: devLoad.label,
     devOwner,
     direction: direction.key,
     directionLabel: direction.label,
@@ -462,8 +449,6 @@ const payload = {
     hasBlocker: IDX.blocker >= 0,
     hasParkedFlag: IDX.parkedFlag >= 0,
     hasDevOwner: IDX.devOwner >= 0,
-    hasDevLoad: IDX.devLoad >= 0,
-    withDevLoad: rows.filter((r) => r.devLoad && r.devLoad !== 'none').length,
     // How much of the funnel each partner type actually records. Comparing a Channel
     // API percentage against a CRS one is only fair if both are being tracked at all.
     stageCoverage: Object.fromEntries(
@@ -531,14 +516,6 @@ if (payload.counts.futureDated > 0) {
   console.warn(`
   NOTE: ${ahead.length} row(s) carry a milestone dated in the future - a plan entered early, not a record:`);
   for (const r of ahead) console.warn(`        ${r.project} - ${r.lastActivity}`);
-}
-
-// Effort is half of the effort x impact matrix. Without it every row reads as low
-// effort, which is not a finding - it is a missing column presented as one.
-if (!payload.counts.hasDevLoad) {
-  console.warn('\nNOTE: no OHMY Dev Load column. Effort is unknown on all rows, so the');
-  console.warn('        effort x impact matrix cannot place anything in the high-effort row.');
-  console.warn('        Dev Owner says who builds; it does not say how much work it is.');
 }
 
 if (payload.counts.withImpact === 0) {
