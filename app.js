@@ -58,13 +58,20 @@
   const daysClass = (row) => {
     if (row.health === 'live') return 'live';
     if (row.days === null) return 'never';
+    // A milestone dated ahead of today is a plan someone typed early, not activity.
+    // Counting days since it gave Hibeds "-19d", which reads as very fresh when the
+    // truth is that nothing has happened yet.
+    if (row.days < 0) return 'future';
     if (row.days > 90) return 'd90';
     if (row.days > 30) return 'd30';
     if (row.days > 14) return 'd14';
     return 'ok';
   };
 
-  const daysText = (row) => (row.days === null ? t('value.never') : `${row.days}d`);
+  const daysText = (row) =>
+    row.days === null ? t('value.never')
+    : row.days < 0 ? t('value.future', { n: -row.days })
+    : `${row.days}d`;
 
   const NEEDS_ATTENTION = new Set(['norecord', 'stalled90', 'stalled30', 'watch']);
   const needsAttention = (row) => NEEDS_ATTENTION.has(row.health);

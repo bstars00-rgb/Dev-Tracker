@@ -408,6 +408,7 @@ const payload = {
     withTarget: rows.filter((r) => r.targetSource === 'target').length,
     withBlocker: rows.filter((r) => r.blocker).length,
     parked: rows.filter((r) => r.parked).length,
+    futureDated: rows.filter((r) => r.days !== null && r.days < 0).length,
     hasTarget: IDX.targetGoLive >= 0,
     hasBlocker: IDX.blocker >= 0,
     hasParkedFlag: IDX.parkedFlag >= 0,
@@ -472,6 +473,13 @@ console.log(`  health:  ${Object.entries(payload.counts.byHealth).map(([k, v]) =
 if (payload.counts.inconsistent > 0) {
   console.warn(`
   NOTE: ${payload.counts.inconsistent} rows where Status disagrees with the milestone dates.`);
+}
+
+if (payload.counts.futureDated > 0) {
+  const ahead = rows.filter((r) => r.days !== null && r.days < 0);
+  console.warn(`
+  NOTE: ${ahead.length} row(s) carry a milestone dated in the future - a plan entered early, not a record:`);
+  for (const r of ahead) console.warn(`        ${r.project} - ${r.lastActivity}`);
 }
 
 if (payload.counts.withImpact === 0) {

@@ -882,3 +882,6 @@ kbd {
 .gaps { margin: 12px 0 0; padding: 10px 12px; list-style: none; border-radius: 6px; background: var(--contact-bg); }
 .gaps li { position: relative; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--faint); }
 .gaps li::before { content: '!'; position: absolute; left: 2px; font-weight: 700; color: var(--warn); }
+
+/* A milestone dated in the future: a plan, not a record. Neither fresh nor stale. */
+.days.future, .t-days.future { color: var(--test); background: var(--test-bg); }
