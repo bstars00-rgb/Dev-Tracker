@@ -87,6 +87,10 @@ const COLUMNS = {
   // The date people ask about most: when is this partner meant to be live? Not in the
   // sheet yet. Named here so it renders the day someone adds the column.
   targetGoLive: ['Target Go-Live', '목표 오픈일', 'Planned Go-Live', 'Target Live Date', '목표 라이브'],
+  // Status is a formula on this sheet - it is looked up from Progress %, which is itself
+  // derived from the milestone dates. Typing "On Hold" into it would overwrite the
+  // formula, so a parked partner is declared in a column of its own instead.
+  parkedFlag: ['Hold/Drop', 'Hold / Drop', '보류/드롭', 'Pipeline', 'Pipeline Status'],
   progress: ['진행율', 'Progress %'],
   currentStage: ['현재 단계', 'Current Stage'],
   nextGate: ['다음 게이트', 'Next Gate'],
@@ -260,9 +264,10 @@ for (let r = HEADER_ROW; r < grid.length; r += 1) {
   const days = daysBetween(lastActivity, today);
   const status = clean(at(raw, 'status')) ?? 'Contact';
 
-  // Statuses that mean "stop expecting movement". The sheet's list is forward-only
-  // today, so this stays empty until On Hold / Dropped are added to the validation.
-  const parked = PARKED[status.toLowerCase()] ?? null;
+  // A dedicated column wins, because Status cannot carry these values. Fall back to
+  // reading Status itself, for a sheet where the column is plain text.
+  const parkedRaw = clean(at(raw, 'parkedFlag'));
+  const parked = PARKED[(parkedRaw ?? status).toLowerCase()] ?? null;
 
   // Only the milestones decide whether something is finished. The Status column says
   // "Live" on eight rows whose dates stop at 45-70%, and treating those as done hid a
@@ -363,6 +368,7 @@ const payload = {
     parked: rows.filter((r) => r.parked).length,
     hasTarget: IDX.targetGoLive >= 0,
     hasBlocker: IDX.blocker >= 0,
+    hasParkedFlag: IDX.parkedFlag >= 0,
     // How much of the funnel each partner type actually records. Comparing a Channel
     // API percentage against a CRS one is only fair if both are being tracked at all.
     stageCoverage: Object.fromEntries(

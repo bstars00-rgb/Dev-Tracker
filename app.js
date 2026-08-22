@@ -804,7 +804,7 @@
     const notes = [
       !c.hasTarget ? t('gap.target', { n: fallbacks, total: ROWS.length }) : null,
       !c.hasBlocker ? t('gap.blocker') : null,
-      (c.parked ?? 0) === 0 && !ROWS.some((r) => r.parked) ? t('gap.parked') : null,
+      !c.hasParkedFlag && !ROWS.some((r) => r.parked) ? t('gap.parked') : null,
     ].filter(Boolean);
 
     host.hidden = notes.length === 0;
