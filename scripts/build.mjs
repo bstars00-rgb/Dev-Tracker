@@ -76,7 +76,7 @@ const COLUMNS = {
   country: ['Country'],
   direction: ['연동 방향 (API Direction)', 'API Direction', '연동 방향'],
   impact: ['Biz Impact'],
-  devLoad: ['OHMY 개발 부하', 'OHMY Dev Load'],
+  devLoad: ['OHMY 개발 부하', 'OHMY Dev Load', 'Dev Load', '개발 부하'],
   devOwner: ['개발 주체 (Dev Owner)', 'Dev Owner', '개발 주체'],
   switching: ['Switching'],
   team: ['담당팀', 'Handling Team'],
@@ -183,7 +183,17 @@ function parseSwitching(column, devOwner) {
  */
 function routeOf(row) {
   if (row.switching) return 'switching';
-  if (row.devOwner) return /^OHMY$/i.test(row.devOwner.trim()) ? 'direct' : 'partner';
+  if (row.devOwner) {
+    const who = row.devOwner.trim();
+    // The sheet writes shared work as "OHMY + Partner (50/50)". An exact match on OHMY
+    // filed those under partner, which told the dev channel that Shiji was somebody
+    // else's build while OHMY was writing half of it.
+    const omh = /OHMY/i.test(who);
+    const other = /partner|client|외부/i.test(who);
+    if (omh && other) return 'shared';
+    if (omh) return 'direct';
+    return 'partner';
+  }
   if (row.devLoad === 'full' || row.devLoad === 'half') return 'direct';
   return 'partner';
 }
@@ -198,10 +208,11 @@ function routeOf(row) {
 function watchOf(row) {
   const route = routeOf(row);
   if ([40, 45, 60, 70, 75, 80, 90].includes(row.progress)) {
-    return route === 'direct' ? 'omhbuild' : 'omhsupport';
+    return route === 'direct' || route === 'shared' ? 'omhbuild' : 'omhsupport';
   }
   if (row.progress === 50) {
-    if (route === 'direct') return 'omhbuild';
+    // Shared work still means OHMY is writing code, so it lands on engineering.
+    if (route === 'direct' || route === 'shared') return 'omhbuild';
     return route === 'switching' ? 'switchreview' : 'partnerbuild';
   }
   if (row.devLoad === 'full' || row.devLoad === 'half' || row.impact === 'High') return 'heads';
@@ -451,6 +462,8 @@ const payload = {
     hasBlocker: IDX.blocker >= 0,
     hasParkedFlag: IDX.parkedFlag >= 0,
     hasDevOwner: IDX.devOwner >= 0,
+    hasDevLoad: IDX.devLoad >= 0,
+    withDevLoad: rows.filter((r) => r.devLoad && r.devLoad !== 'none').length,
     // How much of the funnel each partner type actually records. Comparing a Channel
     // API percentage against a CRS one is only fair if both are being tracked at all.
     stageCoverage: Object.fromEntries(
@@ -518,6 +531,14 @@ if (payload.counts.futureDated > 0) {
   console.warn(`
   NOTE: ${ahead.length} row(s) carry a milestone dated in the future - a plan entered early, not a record:`);
   for (const r of ahead) console.warn(`        ${r.project} - ${r.lastActivity}`);
+}
+
+// Effort is half of the effort x impact matrix. Without it every row reads as low
+// effort, which is not a finding - it is a missing column presented as one.
+if (!payload.counts.hasDevLoad) {
+  console.warn('\nNOTE: no OHMY Dev Load column. Effort is unknown on all rows, so the');
+  console.warn('        effort x impact matrix cannot place anything in the high-effort row.');
+  console.warn('        Dev Owner says who builds; it does not say how much work it is.');
 }
 
 if (payload.counts.withImpact === 0) {

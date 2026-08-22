@@ -77,6 +77,7 @@ window.I18N = {
     'owner.switching': '스위칭',
 
     'route.direct': 'OHMY 직접',
+    'route.shared': 'OHMY + 파트너',
     'route.switching': '{sw} 경유',
     'route.partner': '파트너 구현',
 
@@ -260,6 +261,8 @@ window.I18N = {
     'gap.target.empty': '목표 오픈일 컬럼은 있는데 {total}건 전부 비어 있습니다 — 채우기 전까지 D-day는 나오지 않습니다',
     'gap.blocker.empty': '블로커 컬럼은 있는데 {total}건 전부 비어 있습니다 — 멈춘 건의 이유가 아직 기록되지 않았습니다',
     'gap.parked.empty': 'Hold/Drop 컬럼은 있는데 {total}건 전부 비어 있습니다 — 보류·드롭 건이 진행 중인 건과 섞여 있습니다',
+    'matrix.noeffort': '개발 공수 컬럼(OHMY Dev Load)이 시트에 없어 세로축을 계산할 수 없습니다. 지금은 모든 건이 "공수 적음"으로 떨어집니다 — 실제로 적어서가 아니라 모르기 때문입니다.',
+    'gap.devload': '개발 공수(OHMY Dev Load) 컬럼이 없습니다 — 공수 × 임팩트 4분면의 세로축이 비어 있습니다. Dev Owner는 누가 만드는지를 말할 뿐, 얼마나 걸리는지는 말하지 않습니다.',
     'gap.devowner': '개발 주체(Dev Owner) 컬럼이 없습니다 — OMH/파트너 구분을 개발 부하로 추정하고 있습니다',
     'gap.devowner.empty': '개발 주체 컬럼은 있는데 {total}건 전부 비어 있습니다 — OMH/파트너 구분을 아직 개발 부하로 추정하고 있습니다',
     'gap.blocker': '블로커 컬럼이 없습니다 — 왜 멈춰 있는지는 시트에 기록되지 않습니다',
@@ -270,6 +273,7 @@ window.I18N = {
     'cov.none': '단계 기록 없음 — 진행률은 Status에서만 나옴',
     'th.pic': 'PIC',
     'th.team': '팀',
+    'th.devowner': '개발 주체',
     'th.load': '개발 부하',
     'th.switching': '스위칭',
     'th.last': '마지막 활동',
@@ -368,6 +372,7 @@ window.I18N = {
     'owner.switching': 'Switch',
 
     'route.direct': 'OHMY builds',
+    'route.shared': 'OHMY + partner',
     'route.switching': 'via {sw}',
     'route.partner': 'Partner builds',
 
@@ -546,6 +551,8 @@ window.I18N = {
     'gap.target.empty': 'The target go-live column exists but all {total} rows are empty — no D-day until someone fills it',
     'gap.blocker.empty': 'The blocker column exists but all {total} rows are empty — nothing records why anything is stuck',
     'gap.parked.empty': 'The Hold/Drop column exists but all {total} rows are empty — parked partners still sit among the active ones',
+    'matrix.noeffort': 'No OHMY Dev Load column in the sheet, so the vertical axis cannot be computed. Every project currently falls into "low effort" — not because it is, but because the effort is unknown.',
+    'gap.devload': 'No OHMY Dev Load column — the effort axis of the matrix is empty. Dev Owner says who builds; it does not say how much work it is.',
     'gap.devowner': 'No Dev Owner column — the OMH / partner split is inferred from dev load',
     'gap.devowner.empty': 'The Dev Owner column exists but all {total} rows are empty — the OMH / partner split is still inferred from dev load',
     'gap.blocker': 'No blocker column — the sheet does not record why anything is stuck',
@@ -556,6 +563,7 @@ window.I18N = {
     'cov.none': 'no stage dates — progress comes from Status alone',
     'th.pic': 'PIC',
     'th.team': 'Team',
+    'th.devowner': 'Dev owner',
     'th.load': 'Dev load',
     'th.switching': 'Switching',
     'th.last': 'Last activity',

@@ -308,13 +308,13 @@
 
     const routeNote = (rows) =>
       t('card.route.note', {
-        d: rows.filter((r) => routeOf(r) === 'direct').length,
+        d: rows.filter((r) => ['direct', 'shared'].includes(routeOf(r))).length,
         p: rows.filter((r) => routeOf(r) === 'partner').length,
         s: rows.filter((r) => routeOf(r) === 'switching').length,
       });
 
     const routeSegments = (rows, rest) => [
-      { key: 'rest', n: rows.filter((r) => routeOf(r) === 'direct').length, label: t('route.direct') },
+      { key: 'rest', n: rows.filter((r) => ['direct', 'shared'].includes(routeOf(r))).length, label: t('route.direct') },
       { key: 'ok', n: rows.filter((r) => routeOf(r) === 'partner').length, label: t('route.partner') },
       { key: 'watch', n: rows.filter((r) => routeOf(r) === 'switching').length, label: t('owner.switching') },
       { key: 'idle', n: rest, label: '\u2014' },
@@ -643,9 +643,7 @@
           <td class="dim">${row.impact ? escape(row.impact) : '\u2014'}</td>
           <td>
             <span class="route ${routeOf(row)}">${escape(routeLabel(row))}</span>
-            <span class="a-load">${escape(
-              row.devOwner ? t('label.devowner', { who: row.devOwner }) : t(`load.${row.devLoad}`),
-            )}</span>
+            ${routeOf(row) === 'shared' ? `<span class="a-load">${escape(row.devOwner)}</span>` : ''}
           </td>
           <td><span class="klass ${classOf(row)}">${escape(t(`class.${classOf(row)}`))}</span></td>
           <td class="dim">${escape(row.currentStage ?? t('stage.untracked'))} <span class="a-pct">${row.progress}%</span></td>
@@ -722,7 +720,13 @@
         </button>`;
     }
 
-    $('matrix-note').textContent = t('matrix.unknown', { n: ROWS.filter((r) => !r.impact).length });
+    // Effort is one of the two axes. Without the column every row falls into the
+    // low-effort half, which is not a result - it is a blank presented as one.
+    const noEffort = !(data.counts?.hasDevLoad ?? true);
+    $('matrix').classList.toggle('no-effort', noEffort);
+    $('matrix-note').textContent = noEffort
+      ? t('matrix.noeffort')
+      : t('matrix.unknown', { n: ROWS.filter((r) => !r.impact).length });
 
     $('matrix').onclick = (event) => {
       const button = event.target.closest('[data-class]');
@@ -799,6 +803,7 @@
       gap(c.hasParkedFlag, c.parked, 'gap.parked', 'gap.parked.empty'),
       c.hasDevOwner && c.withDevOwner === 0 ? t('gap.devowner.empty', { total }) : null,
       !c.hasDevOwner ? t('gap.devowner') : null,
+      !c.hasDevLoad ? t('gap.devload') : null,
     ].filter(Boolean);
 
     host.hidden = notes.length === 0;
@@ -944,7 +949,13 @@
         <td class="c-next">${nextCell(row)}</td>
         <td class="c-owner">${ownerCell(row)}</td>
         <td>${row.pic ? escape(row.pic) : '<span class="faint">—</span>'}</td>
-        <td><span class="load ${row.devLoad}"><span class="dot"></span>${escape(row.devLoadLabel)}</span></td>
+        <td>${
+          data.counts?.hasDevLoad
+            ? `<span class="load ${row.devLoad}"><span class="dot"></span>${escape(row.devLoadLabel)}</span>`
+            : row.devOwner
+            ? `<span class="own ${routeOf(row)}">${escape(row.devOwner)}</span>`
+            : '<span class="faint">—</span>'
+        }</td>
         <td class="c-switching dim">${row.switching ? escape(row.switching) : '—'}</td>
         <td class="c-target">${targetCell(row)}</td>
         <td class="dim">${fmtDate(row.lastActivity)}</td>
@@ -1072,6 +1083,16 @@
     state.category = button.dataset.cat;
     renderList();
   });
+
+  // The workbook replaced OHMY Dev Load with Dev Owner. Relabel the column to match
+  // what it now holds, rather than heading a column of owners "Dev load".
+  (() => {
+    const th = document.querySelector('th[data-sort="devLoad"]');
+    if (!th) return;
+    const key = data.counts?.hasDevLoad ? 'th.load' : 'th.devowner';
+    th.dataset.i18n = key;
+    th.dataset.sort = data.counts?.hasDevLoad ? 'devLoad' : 'devOwner';
+  })();
 
   function renderList() {
     const rows = visibleRows();

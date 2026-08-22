@@ -885,3 +885,13 @@ kbd {
 
 /* A milestone dated in the future: a plan, not a record. Neither fresh nor stale. */
 .days.future, .t-days.future { color: var(--test); background: var(--test-bg); }
+
+/* Shared build: OHMY and the partner both write code. Reads as OHMY, since our
+   engineering is on the hook either way, but distinct enough to be visible. */
+.route.shared { color: var(--dev); background: var(--dev-bg); box-shadow: inset 0 0 0 1px currentColor; }
+
+/* With no effort column the bottom row of the matrix can never fill, so it is dimmed
+   rather than left looking like a genuine count of zero. */
+.matrix.no-effort .mx-box.major,
+.matrix.no-effort .mx-box.justify { opacity: .4; }
+.matrix.no-effort .mx-side:last-of-type { opacity: .5; }
