@@ -207,7 +207,40 @@ const IDX = Object.fromEntries(
   }),
 );
 
-// Whichever milestone layout matches more of this header row is the one in use.
+/**
+ * Find a milestone column without depending on its wording.
+ *
+ * The descriptive half of these headers drifts - "⑥ Live Open (80%)" became
+ * "⑥ Live Key Open (80%)", and ⑤ grew a "/ Credential" suffix - while the circled
+ * numeral and the weight in brackets stay put. Matching on the stable parts means a
+ * reworded column keeps reporting instead of silently going blank.
+ */
+const CIRCLED = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫';
+function findStage(stage) {
+  const exact = columnOf(stage.column);
+  if (exact >= 0) return exact;
+
+  const numeral = CIRCLED[stage.n - 1];
+  const byNumeral = headers.findIndex((h) => h.startsWith(numeral));
+  if (byNumeral >= 0) return byNumeral;
+
+  return headers.findIndex((h) => h.includes(`(${stage.weight}%)`));
+}
+
+/** The sheet's own wording wins, so a rename shows up on the board rather than breaking it. */
+function labelFrom(header, fallback) {
+  const text = String(header ?? '')
+    .replace(new RegExp(`^[${CIRCLED}]\s*`), '')
+    .replace(/\s*\(\d+%\)\s*/, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text || fallback;
+}
+
+// Whichever milestone layout matches more of this header row is the one in use. This
+// decision has to run on exact names: the fuzzy fallback above matches a circled numeral
+// in either layout, so using it here would let the twelve-stage set claim an
+// eleven-stage sheet. Fuzzy matching resolves columns only after the layout is settled.
 const matches = (set) => set.filter((stage) => columnOf(stage.column) >= 0).length;
 const [setName, STAGES] = matches(STAGE_SETS.twelve) >= matches(STAGE_SETS.eleven)
   ? ['twelve', STAGE_SETS.twelve]
@@ -219,7 +252,16 @@ if (IDX.project < 0) {
   process.exit(1);
 }
 
-const stageIndex = STAGES.map((stage) => ({ ...stage, index: columnOf(stage.column) }));
+const stageIndex = STAGES.map((stage) => {
+  const index = findStage(stage);
+  return { ...stage, index, label: index >= 0 ? labelFrom(headers[index], stage.label) : stage.label };
+});
+
+const renamed = stageIndex.filter((s2) => s2.index >= 0 && headers[s2.index] !== s2.column);
+if (renamed.length) {
+  console.warn(`Note: ${renamed.length} milestone columns are worded differently than expected; matched on number and weight instead:`);
+  for (const s2 of renamed) console.warn(`        ${s2.column}  ->  ${headers[s2.index]}`);
+}
 const missingStages = stageIndex.filter((s) => s.index < 0);
 if (missingStages.length) {
   console.warn(`Warning: stage columns not found, they will be blank: ${missingStages.map((s) => s.column).join(', ')}`);
@@ -356,7 +398,7 @@ const payload = {
   sourceSheet: SHEET,
   sourceModified: fs.statSync(SOURCE).mtime.toISOString(),
   stageLayout: setName,
-  stageModel: STAGES.map(({ n, label, short, weight }) => ({ n, label, short, weight })),
+  stageModel: stageIndex.map(({ n, label, short, weight }) => ({ n, label, short, weight })),
   counts: {
     total: rows.length,
     byStatus: stats('status'),
