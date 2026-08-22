@@ -958,43 +958,82 @@
       </tr>`;
   }
 
+  const daysApart = (fromISO, toISO) =>
+    Math.round((Date.parse(`${toISO}T00:00:00Z`) - Date.parse(`${fromISO}T00:00:00Z`)) / 86_400_000);
+
   function detailHtml(row) {
+    // Three states, not two. A stage with no date that sits *before* one that has a date
+    // was never logged - which is a different fact from a stage the project has simply
+    // not reached yet. Klook records ④ through ⑧ but nothing for NDA, Contract or SLA.
+    const lastHit = row.stages.reduce((acc, s, i) => (s.date ? i : acc), -1);
+    let previousDate = null;
+
     const stages = row.stages
-      .map(
-        (s) => `
-        <div class="stagerow ${s.date ? 'hit' : 'miss'} ${s.date && s.weight === 100 ? 'final' : ''}">
+      .map((s, i) => {
+        const state = s.date ? 'hit' : i < lastHit ? 'skipped' : 'ahead';
+        const gap = s.date && previousDate ? daysApart(previousDate, s.date) : null;
+        if (s.date) previousDate = s.date;
+
+        const value =
+          state === 'hit' ? fmtDate(s.date) : state === 'skipped' ? t('stage.skipped') : t('stage.ahead');
+
+        // A negative gap means this milestone is dated before the one above it. Linkstay
+        // is marked API Live Complete in January against a Live Test in May. Saying
+        // "+-120d" hid that; calling it backwards puts it in front of whoever opened the row.
+        const back = gap !== null && gap < 0;
+        const isNow = i === lastHit && row.progress < 100;
+
+        return `
+        <li class="stagerow ${state} ${s.date && s.weight === 100 ? 'final' : ''} ${isNow ? 'now' : ''}">
+          <span class="sdot"></span>
           <span class="n">${String(s.n).padStart(2, '0')}</span>
           <span class="l">${escape(s.label)}</span>
-          <span class="d">${s.date ? fmtDate(s.date) : '—'}</span>
-        </div>`,
-      )
+          <span class="d">${escape(value)}</span>
+          <span class="g ${back ? 'back' : ''}" ${back ? `title="${escape(t('stage.gapback.why'))}"` : ''}>${
+            gap === null ? '' : escape(t(back ? 'stage.gapback' : 'stage.gap', { n: Math.abs(gap) }))
+          }</span>
+          ${isNow ? `<span class="nowtag">${escape(t('stage.now'))}</span>` : ''}
+        </li>`;
+      })
       .join('');
 
     const ts = targetState(row);
-    const notes = [
-      row.currentStage ? t('detail.furthest', { stage: escape(row.currentStage) }) : t('detail.nostage'),
-      t('detail.owner', { who: t(`owner.${ownerNow(row)}`) }),
-      (() => {
-        const a = nextAction(row);
-        return a ? t('detail.next', { text: [a.text, a.caveat, a.gate].filter(Boolean).map(escape).join(' · ') }) : null;
-      })(),
-      ts ? t('detail.target', { date: fmtDate(ts.date), drift: ts.text }) : null,
-      row.delayNote ? t('detail.note', { note: escape(row.delayNote) }) : null,
-      row.consistent === false ? t('detail.consistency', { note: escape(row.consistency ?? '') }) : null,
-      row.lastActivity ? t('detail.last', { date: fmtDate(row.lastActivity), n: row.days }) : t('detail.never'),
-      row.blocker ? t('detail.blocker', { note: escape(row.blocker) }) : null,
-      row.note ? t('detail.free', { note: escape(row.note) }) : null,
+    const action = nextAction(row);
+
+    // Label above value, one fact per cell. The single run-on line these used to share
+    // made the blocker read like part of the date next to it.
+    const facts = [
+      [t('fact.stage'), row.currentStage ? escape(row.currentStage) : t('detail.nostage'), false],
+      [t('th.owner'), escape(t(`owner.${ownerNow(row)}`)), false],
+      [t('th.target'), ts ? `${escape(fmtDate(ts.date))} <em>${escape(ts.text)}</em>` : t('target.none'), false],
+      [
+        t('th.last'),
+        row.lastActivity ? `${escape(fmtDate(row.lastActivity))} <em>${escape(t('detail.ago', { n: row.days }))}</em>` : t('detail.never'),
+        false,
+      ],
+      action ? [t('th.next'), [action.text, action.caveat, action.gate].filter(Boolean).map(escape).join(' · '), true] : null,
+      row.blocker ? [t('fact.blocker'), escape(row.blocker), true] : null,
+      row.delayNote ? [t('fact.delay'), escape(row.delayNote), false] : null,
+      row.consistent === false ? [t('fact.consistency'), escape(row.consistency ?? ''), false] : null,
+      row.note ? [t('fact.note'), escape(row.note), true] : null,
     ]
       .filter(Boolean)
-      .join(' &nbsp;·&nbsp; ');
+      .map(([label, value, wide]) => `
+        <div class="fact ${wide ? 'wide' : ''}">
+          <dt>${escape(label)}</dt>
+          <dd>${value}</dd>
+        </div>`)
+      .join('');
 
     return `
       <tr class="detail" data-detail="${row.no}">
         <td colspan="14">
           <div class="detail-inner">
             <div class="detail-title">${t('detail.title', { name: escape(row.project) })}</div>
-            <div class="stagelist">${stages}</div>
-            <p class="notes">${notes}</p>
+            <div class="detail-cols">
+              <ol class="stagelist">${stages}</ol>
+              <dl class="factlist">${facts}</dl>
+            </div>
           </div>
         </td>
       </tr>`;

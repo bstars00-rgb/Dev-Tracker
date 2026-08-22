@@ -25,6 +25,10 @@
   --danger: #d92d20;
   --danger-bg: #fdeceb;
 
+  /* The expanded row sits inside the table, so it needs its own ground to read as a
+     panel rather than as three more table rows. */
+  --detail-bg: #f0f3f7;
+
   --radius: 8px;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -54,6 +58,8 @@
     --warn: #d29922;
     --danger: #f85149;
     --danger-bg: #2d1618;
+
+    --detail-bg: #10151c;
   }
 }
 
@@ -438,30 +444,103 @@ td.num { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
 .days.live { color: var(--live); }
 
 /* expanded detail row */
-tr.detail > td { padding: 0; background: color-mix(in srgb, var(--accent) 4%, transparent); }
-.detail-inner { padding: 10px 12px 12px; }
-.detail-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
-
-.stagelist { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 6px; }
-.stagerow {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  padding: 5px 8px;
-  border: 1px solid var(--line);
-  border-left-width: 3px;
-  border-radius: 5px;
-  background: var(--panel);
+/* ---------------------------------------------------------------- expanded row
+   The stage history used to be a wrapping grid of eleven near-identical boxes: reached
+   and not-reached differed by a 3px border and some opacity, and the wrap broke the
+   sequence in half. It is a vertical timeline now, which reads in one direction and has
+   room to say *why* a stage is blank. */
+tr.detail > td {
+  padding: 0;
+  background: var(--detail-bg);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
-.stagerow.hit { border-left-color: var(--dev); }
-.stagerow.hit.final { border-left-color: var(--live); }
-.stagerow.miss { border-left-color: var(--line); opacity: 0.6; }
-.stagerow .n { font: 600 10px/1 var(--mono); color: var(--faint); }
-.stagerow .l { flex: 1; font-size: 11.5px; }
-.stagerow .d { font: 11px/1 var(--mono); color: var(--muted); }
+.detail-inner { padding: 14px 16px 16px; }
+.detail-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.detail-cols { display: grid; grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); gap: 24px; align-items: start; }
 
-.notes { margin-top: 9px; font-size: 12px; color: var(--muted); }
-.notes b { color: var(--text); font-weight: 600; }
+.stagelist { list-style: none; margin: 0; padding: 0; }
+.stagerow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px 20px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 12px;
+}
+/* The connector, drawn behind the dots and stopped before the last one. */
+.stagerow::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 2px;
+  height: 100%;
+  background: var(--line);
+}
+.stagerow:last-child::before { display: none; }
+.stagerow.hit::before { background: var(--dev); }
+
+.sdot {
+  width: 9px;
+  height: 9px;
+  margin-left: 4px;
+  border-radius: 50%;
+  z-index: 1;
+  box-sizing: border-box;
+}
+.stagerow.hit .sdot { background: var(--dev); }
+.stagerow.hit.final .sdot { background: var(--live); }
+.stagerow.skipped .sdot { border: 2px dashed var(--warn); }
+.stagerow.ahead .sdot { border: 2px solid var(--line); }
+
+.stagerow .n { font: 600 10px/1 var(--mono); color: var(--faint); }
+.stagerow .l { font-size: 12px; color: var(--text); }
+.stagerow .d { font: 11px/1 var(--mono); color: var(--muted); white-space: nowrap; }
+.stagerow .g { font: 10px/1 var(--mono); color: var(--faint); min-width: 38px; text-align: right; }
+.stagerow .g.back { color: var(--warn); font-weight: 700; cursor: help; }
+
+/* Not reached yet: present but plainly inert. */
+.stagerow.ahead .l, .stagerow.ahead .n { color: var(--faint); }
+.stagerow.ahead .d { color: var(--faint); }
+/* Never logged, though the project moved past it. That is a gap in the sheet, not
+   progress, so it is called out rather than dimmed into the same grey. */
+.stagerow.skipped .l { color: var(--muted); }
+.stagerow.skipped .d { color: var(--warn); }
+.stagerow.now .l { font-weight: 700; }
+.nowtag {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font: 700 9px/1.6 var(--mono);
+  letter-spacing: .06em;
+  color: #fff;
+  background: var(--dev);
+}
+
+/* Capped, or the facts stretch a short value like "Dev" across half a wide screen. */
+.factlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 240px)); gap: 12px 20px; margin: 0; max-width: 900px; }
+.fact { min-width: 0; }
+.fact.wide { grid-column: 1 / -1; }
+.fact dt {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  margin-bottom: 2px;
+}
+.fact dd { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--text); }
+.fact dd em { font-style: normal; color: var(--muted); }
+
+@media (max-width: 1100px) {
+  .detail-cols { grid-template-columns: 1fr; gap: 16px; }
+}
 
 .empty { padding: 34px; text-align: center; color: var(--muted); }
 
